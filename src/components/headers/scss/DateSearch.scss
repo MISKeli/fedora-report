@@ -1,0 +1,308 @@
+/* DateSearch Responsive Styles with Horizontal Scroll */
+.date-search-container {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  flex-wrap: nowrap !important;
+  padding: 16px !important;
+  width: 100% !important;
+  position: relative !important;
+}
+
+/* Create scrollable area for inputs (search + date pickers) */
+.date-search-scrollable {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  flex-wrap: nowrap !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  flex: 1 !important;
+  min-width: 0 !important;
+  /* Custom scrollbar styling */
+  scrollbar-width: thin !important;
+  scrollbar-color: #c1c1c1 transparent !important;
+}
+
+.date-search-scrollable::-webkit-scrollbar {
+  height: 6px !important;
+}
+
+.date-search-scrollable::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+
+.date-search-scrollable::-webkit-scrollbar-thumb {
+  background: #c1c1c1 !important;
+  border-radius: 3px !important;
+}
+
+.date-search-scrollable::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8 !important;
+}
+
+/* Generate button - always visible, fixed position */
+.date-search-container .MuiButton-root {
+  flex: 0 0 auto !important;
+  min-width: 110px !important;
+  position: sticky !important;
+  right: 0 !important;
+  z-index: 2 !important;
+  background: white !important;
+  margin-left: 8px !important;
+}
+
+/* Mobile - Very small screens (up to 480px) */
+@media (max-width: 480px) {
+  .date-search-container {
+    padding: 12px !important;
+    gap: 8px !important;
+  }
+
+  .date-search-scrollable {
+    gap: 8px !important;
+  }
+
+  /* Search Input - Fixed width for mobile */
+  .date-search-container .date-search-scrollable > div:first-child {
+    flex: 0 0 180px !important;
+    min-width: 180px !important;
+  }
+
+  .date-search-container
+    .date-search-scrollable
+    > div:first-child
+    .MuiInputBase-root {
+    min-width: 180px !important;
+    width: 180px !important;
+  }
+
+  /* Date Picker Container - Fixed width */
+  .date-search-container .date-search-scrollable > div:nth-child(2) {
+    flex: 0 0 auto !important;
+    gap: 8px !important;
+    display: flex !important;
+    align-items: center !important;
+  }
+
+  /* Individual Date Pickers - Fixed width */
+  .date-search-container .MuiDatePicker-root {
+    flex: 0 0 140px !important;
+    min-width: 140px !important;
+  }
+
+  .date-search-container .MuiDatePicker-root .MuiTextField-root {
+    width: 140px !important;
+    min-width: 140px !important;
+  }
+
+  /* Generate Button - Smaller on mobile */
+  .date-search-container .MuiButton-root {
+    min-width: 90px !important;
+    font-size: 0.8rem !important;
+    padding: 8px 12px !important;
+  }
+}
+
+/* Small Mobile to Tablet - 481px to 768px */
+@media (min-width: 481px) and (max-width: 768px) {
+  .date-search-scrollable {
+    gap: 10px !important;
+  }
+
+  /* Search Input - Fixed width */
+  .date-search-container .date-search-scrollable > div:first-child {
+    flex: 0 0 200px !important;
+    min-width: 200px !important;
+  }
+
+  .date-search-container
+    .date-search-scrollable
+    > div:first-child
+    .MuiInputBase-root {
+    min-width: 200px !important;
+    width: 200px !important;
+  }
+
+  /* Date Picker Container */
+  .date-search-container .date-search-scrollable > div:nth-child(2) {
+    flex: 0 0 auto !important;
+    gap: 10px !important;
+    display: flex !important;
+    align-items: center !important;
+  }
+
+  /* Date Pickers - Fixed width */
+  .date-search-container .MuiDatePicker-root {
+    flex: 0 0 150px !important;
+    min-width: 150px !important;
+  }
+
+  .date-search-container .MuiDatePicker-root .MuiTextField-root {
+    width: 150px !important;
+    min-width: 150px !important;
+  }
+
+  /* Generate Button */
+  .date-search-container .MuiButton-root {
+    min-width: 100px !important;
+    font-size: 0.85rem !important;
+  }
+}
+
+/* Tablet to Small Desktop - 769px to 1024px */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .date-search-scrollable {
+    gap: 12px !important;
+  }
+
+  /* Search Input */
+  .date-search-container .date-search-scrollable > div:first-child {
+    flex: 0 0 220px !important;
+    min-width: 220px !important;
+  }
+
+  .date-search-container
+    .date-search-scrollable
+    > div:first-child
+    .MuiInputBase-root {
+    min-width: 220px !important;
+    width: 220px !important;
+  }
+
+  /* Date Picker Container */
+  .date-search-container .date-search-scrollable > div:nth-child(2) {
+    flex: 0 0 auto !important;
+    gap: 12px !important;
+    display: flex !important;
+    align-items: center !important;
+  }
+
+  /* Date Pickers */
+  .date-search-container .MuiDatePicker-root {
+    flex: 0 0 160px !important;
+    min-width: 160px !important;
+  }
+
+  .date-search-container .MuiDatePicker-root .MuiTextField-root {
+    width: 160px !important;
+    min-width: 160px !important;
+  }
+
+  /* Generate Button */
+  .date-search-container .MuiButton-root {
+    min-width: 110px !important;
+  }
+}
+
+/* Desktop - 1025px and above */
+@media (min-width: 1025px) {
+  /* On larger screens, disable scroll and use flexible layout */
+  .date-search-scrollable {
+    overflow-x: visible !important;
+    gap: 14px !important;
+  }
+
+  /* Search Input - Flexible but with good minimum */
+  .date-search-container .date-search-scrollable > div:first-child {
+    flex: 0 0 240px !important;
+    min-width: 240px !important;
+  }
+
+  .date-search-container
+    .date-search-scrollable
+    > div:first-child
+    .MuiInputBase-root {
+    min-width: 240px !important;
+    width: 240px !important;
+  }
+
+  /* Date Picker Container - Takes remaining space */
+  .date-search-container .date-search-scrollable > div:nth-child(2) {
+    flex: 1 !important;
+    gap: 14px !important;
+    display: flex !important;
+    align-items: center !important;
+    min-width: 0 !important;
+  }
+
+  /* Date Pickers - Flexible */
+  .date-search-container .MuiDatePicker-root {
+    flex: 1 !important;
+    min-width: 160px !important;
+  }
+
+  .date-search-container .MuiDatePicker-root .MuiTextField-root {
+    width: 100% !important;
+    min-width: 160px !important;
+  }
+
+  /* Generate Button */
+  .date-search-container .MuiButton-root {
+    min-width: 120px !important;
+  }
+}
+
+/* Extra Large Desktop - 1400px and above */
+@media (min-width: 1400px) {
+  .date-search-scrollable {
+    gap: 16px !important;
+  }
+
+  .date-search-container .date-search-scrollable > div:first-child {
+    flex: 0 0 280px !important;
+    min-width: 280px !important;
+  }
+
+  .date-search-container
+    .date-search-scrollable
+    > div:first-child
+    .MuiInputBase-root {
+    min-width: 280px !important;
+    width: 280px !important;
+  }
+
+  .date-search-container .MuiDatePicker-root {
+    min-width: 180px !important;
+  }
+
+  .date-search-container .MuiButton-root {
+    min-width: 130px !important;
+  }
+}
+
+/* Fix for overlapping search icon */
+.date-search-container .MuiInputBase-root .MuiIconButton-root:first-child {
+  z-index: 1 !important;
+}
+
+/* Ensure proper spacing for search label */
+.date-search-container .MuiInputBase-root + .MuiTypography-root {
+  white-space: nowrap !important;
+}
+
+/* Ensure date picker labels don't break */
+.date-search-container .MuiDatePicker-root .MuiFormLabel-root {
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+/* Scroll indicator for mobile users */
+@media (max-width: 1024px) {
+  .date-search-scrollable::after {
+    content: "" !important;
+    position: absolute !important;
+    right: 0 !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    width: 20px !important;
+    background: linear-gradient(
+      to right,
+      transparent,
+      rgba(255, 255, 255, 0.8)
+    ) !important;
+    pointer-events: none !important;
+    z-index: 1 !important;
+  }
+}

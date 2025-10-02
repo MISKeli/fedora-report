@@ -1,0 +1,532 @@
+@import "../Colors/_palette.module";
+
+.side {
+  background-color: $background-paper;
+  height: 100vh;
+  width: 250px;
+  padding: 0;
+  margin: 0;
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 1300;
+  transition: width 0.3s ease, transform 0.3s ease;
+  border-right: 1px solid rgba(0, 0, 0, 0.12);
+  display: flex;
+  flex-direction: column;
+
+  // Closed state
+  &--closed {
+    width: 60px;
+
+    @media (max-width: 768px) {
+      transform: translateX(-100%);
+      width: 250px;
+    }
+  }
+
+  // Open state
+  &--open {
+    width: 250px;
+    transform: translateX(0);
+  }
+
+  &__overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1200;
+  }
+
+  &__container {
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+
+    &--header {
+      // background-color: rgb(248, 249, 250);
+      height: 50px;
+      display: flex;
+      align-items: center;
+      padding: 0;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+      min-height: 50px;
+      flex-shrink: 0;
+    }
+
+    &--content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px 0;
+    }
+
+    &--footer {
+      height: 50px;
+      min-height: 51px;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      justify-content: center;
+      border-top: 1px solid rgba(0, 0, 0, 0.12);
+      padding: 0;
+      flex-shrink: 0;
+      margin-top: auto;
+    }
+  }
+
+  &__header {
+    max-height: 50px;
+    height: 50px;
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    position: relative;
+    z-index: 2;
+    width: 100%;
+  }
+
+  &__logo {
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+    margin-right: 12px;
+  }
+
+  &__logo-text {
+    color: rgb(46, 40, 40);
+    font-size: 16px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    transition: opacity 0.3s ease;
+  }
+
+  // Menu styles
+  &__menu {
+    padding: 0;
+
+    &-item {
+      margin-bottom: 2px;
+      
+      // Nested items styling
+      &--nested {
+        margin-bottom: 1px;
+        position: relative;
+        
+        // Add connecting line for nested items
+        &::before {
+          content: '';
+          position: absolute;
+          left: 32px;
+          top: 0;
+          bottom: 0;
+          width: 1px;
+          background: linear-gradient(to bottom, 
+            rgba(25, 118, 210, 0.2) 0%, 
+            rgba(25, 118, 210, 0.1) 50%, 
+            rgba(25, 118, 210, 0.05) 100%);
+          z-index: 1;
+        }
+        
+        .side__menu-button {
+          background-color: transparent;
+          border: none;
+          border-left: 3px solid transparent;
+          border-radius: 0 8px 8px 0;
+          margin: 2px 8px 2px 16px;
+          transition: all 0.2s ease;
+          
+          &:hover {
+            background-color: rgba(25, 118, 210, 0.04);
+            border-left: 3px solid rgba(25, 118, 210, 0.3);
+            
+            .side__menu-icon .MuiSvgIcon-root {
+              color: $primary-main;
+            }
+            
+            .side__menu-text .MuiTypography-root {
+              color: $primary-main;
+            }
+          }
+          
+          &--active {
+            background-color: rgba(255, 152, 78, 0.1);
+            border-left: 3px solid $primary-main;
+            
+            .side__menu-icon .MuiSvgIcon-root {
+              color: $primary-main;
+            }
+            
+            .side__menu-text .MuiTypography-root {
+              color: $primary-main;
+              font-weight: 600;
+            }
+            
+            &:hover {
+              background-color: rgba(255, 152, 78, 0.15);
+              border-left: 3px solid $primary-main;
+            }
+          }
+        }
+      }
+    }
+
+    &-button {
+      border-radius: 8px;
+      margin: 0 8px;
+      transition: all 0.2s ease;
+      position: relative;
+
+      &:hover {
+        background-color: rgba(25, 118, 210, 0.08);
+
+        .side__menu-icon .MuiSvgIcon-root {
+          color: $primary-main;
+        }
+        
+        .side__menu-expand-icon .MuiSvgIcon-root {
+          color: $primary-main;
+        }
+      }
+
+      &--active {
+        background-color: rgba(25, 118, 210, 0.12);
+        color: $primary-main;
+
+        .side__menu-icon .MuiSvgIcon-root {
+          color: $primary-main;
+        }
+
+        .side__menu-text .MuiTypography-root {
+          color: $primary-main;
+          font-weight: 600;
+        }
+        
+        .side__menu-expand-icon .MuiSvgIcon-root {
+          color: $primary-main;
+        }
+
+        &:hover {
+          background-color: rgba(25, 118, 210, 0.16);
+        }
+      }
+    }
+
+    &-icon {
+      color: rgb(97, 97, 97);
+
+      .MuiSvgIcon-root {
+        transition: color 0.2s ease;
+      }
+    }
+
+    &-text {
+      .MuiTypography-root {
+        font-size: 14px;
+        color: rgb(46, 40, 40);
+        font-weight: 500;
+        transition: color 0.2s ease;
+      }
+    }
+    
+    // Expand/collapse icon styles
+    &-expand-icon {
+      cursor: pointer;
+      border-radius: 4px;
+      transition: all 0.2s ease;
+      
+      .MuiSvgIcon-root {
+        color: rgb(97, 97, 97);
+        transition: all 0.2s ease;
+        font-size: 18px;
+      }
+      
+      &:hover {
+        background-color: rgba(0, 0, 0, 0.04);
+        
+        .MuiSvgIcon-root {
+          color: $primary-main;
+        }
+      }
+    }
+  }
+
+  // User menu styles (following same pattern as regular menu)
+  &__user-menu {
+    &-item {
+      margin-bottom: 2px;
+    }
+
+    &-button {
+      border-radius: 8px;
+      margin: 0 8px;
+      transition: all 0.2s ease;
+
+      &:hover {
+        background-color: rgba(25, 118, 210, 0.08);
+
+        .side__user-menu-icon .MuiAvatar-root {
+          // Optional: add hover effect for avatar
+        }
+      }
+    }
+
+    &-icon {
+      color: rgb(97, 97, 97);
+
+      .MuiAvatar-root {
+        transition: all 0.2s ease;
+      }
+    }
+
+    &-text {
+      .MuiTypography-root {
+        font-size: 14px;
+        color: rgb(46, 40, 40);
+        font-weight: 500;
+        transition: color 0.2s ease;
+      }
+    }
+
+    &-arrow {
+      transition: transform 0.3s ease;
+    }
+  }
+
+  // User dropdown menu
+  &__user-dropdown {
+    .MuiPaper-root {
+      border-radius: 8px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      border: 1px solid rgba(0, 0, 0, 0.08);
+    }
+
+    &-header {
+      background-color: rgb(248, 249, 250);
+      border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    }
+
+    .MuiMenuItem-root {
+      padding: 8px 16px;
+      transition: background-color 0.2s ease;
+
+      &:hover {
+        background-color: rgba(25, 118, 210, 0.08);
+
+        .MuiListItemIcon-root .MuiSvgIcon-root {
+          color: $primary-main;
+        }
+
+        .MuiListItemText-root .MuiTypography-root {
+          color: $primary-main;
+        }
+      }
+
+      .MuiListItemIcon-root {
+        min-width: 36px;
+
+        .MuiSvgIcon-root {
+          color: rgb(97, 97, 97);
+          transition: color 0.2s ease;
+        }
+      }
+
+      .MuiListItemText-root {
+        .MuiTypography-root {
+          font-size: 14px;
+          color: rgb(46, 40, 40);
+          font-weight: 500;
+          transition: color 0.2s ease;
+        }
+      }
+    }
+
+    // Special styling for logout item
+    .MuiMenuItem-root:last-child {
+      &:hover {
+        background-color: rgba(244, 67, 54, 0.08);
+
+        .MuiListItemIcon-root .MuiSvgIcon-root {
+          color: rgb(244, 67, 54);
+        }
+
+        .MuiListItemText-root .MuiTypography-root {
+          color: rgb(244, 67, 54);
+        }
+      }
+    }
+  }
+
+  &__footer-text {
+    font-size: 10px;
+    color: rgb(97, 97, 97);
+    text-align: center;
+    margin-top: 4px;
+  }
+}
+
+// Nested menu animations and styles
+.MuiCollapse-root {
+  .side__menu-item--nested {
+    .side__menu-button {
+      font-size: 13px;
+      min-height: 40px;
+      
+      .side__menu-text .MuiTypography-root {
+        font-size: 13px;
+        font-weight: 400;
+      }
+      
+      .side__menu-icon {
+        .MuiSvgIcon-root {
+          font-size: 18px;
+        }
+      }
+    }
+  }
+}
+
+// Navigation styles update
+.nav {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+  padding: 8px;
+
+  &__container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    &__side-menu {
+      display: flex;
+      align-items: center;
+    }
+
+    &__menu {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+    }
+
+    &__menu-dropdown {
+      .nav__menu-dropdown__item__name {
+        .MuiTypography-root {
+          font-size: 14px;
+          color: rgb(46, 40, 40);
+        }
+      }
+    }
+  }
+
+  &__sidebar-toggle {
+    color: rgb(97, 97, 97);
+
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.04);
+      color: rgb(25, 118, 210);
+    }
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .side {
+    &--closed {
+      transform: translateX(-100%);
+      width: 250px;
+    }
+
+    &__container--footer {
+      min-height: 60px;
+    }
+
+    &__user-menu {
+      padding: 0 8px;
+
+      &-button {
+        padding: 8px;
+      }
+    }
+
+    // Nested menu adjustments for mobile
+    &__menu-item--nested {
+      .side__menu-button {
+        padding-left: 16px;
+      }
+    }
+  }
+}
+
+// Additional responsive adjustments for very small screens
+@media (max-width: 480px) {
+  .side {
+    &__user-dropdown {
+      .MuiPaper-root {
+        max-width: calc(100vw - 32px);
+        margin: 0 16px;
+      }
+    }
+    
+    // Further adjust nested items for small screens
+    &__menu-item--nested {
+      .side__menu-button {
+        padding-left: 12px;
+        min-height: 36px;
+        
+        .side__menu-text .MuiTypography-root {
+          font-size: 12px;
+        }
+      }
+    }
+  }
+}
+
+// Custom scrollbar for sidebar content
+.side__container--content {
+  // Webkit browsers
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 2px;
+    
+    &:hover {
+      background: rgba(0, 0, 0, 0.3);
+    }
+  }
+
+  // Firefox
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+}
+
+// Smooth transitions for sidebar state changes
+.side {
+  .side__menu-item,
+  .side__menu-button,
+  .side__menu-icon,
+  .side__menu-text,
+  .side__menu-expand-icon {
+    transition: all 0.3s ease;
+  }
+}
+
+// Focus states for accessibility
+.side__menu-button:focus-visible,
+.side__user-menu-button:focus-visible {
+  outline: 2px solid $primary-main;
+  outline-offset: 2px;
+}
+
+.side__menu-expand-icon:focus-visible {
+  outline: 2px solid $primary-main;
+  outline-offset: 1px;}

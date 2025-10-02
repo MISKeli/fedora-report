@@ -1,0 +1,19 @@
+@import "../Colors/_palette.module";
+.nav {
+  align-content: center;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+
+  padding: 8px;
+  height: 50px;
+  &__container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    &__date {
+      .MuiTypography-root {
+        font-size: 14px;
+      }
+      //color: $primary-main;
+    }
+  }
+}

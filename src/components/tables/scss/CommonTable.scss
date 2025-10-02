@@ -1,0 +1,271 @@
+// CommonTable.scss - BEM Style with Fixed Scrolling and Bottom Actions
+.common-table {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; // This is crucial for proper flex scrolling
+
+  &__loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+    width: 100%;
+  }
+
+  &__empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    width: 100%;
+    background-color: #fafafa;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    margin-bottom: 50px;
+  }
+
+  &__container {
+    flex: 1; // Take remaining space
+    overflow: auto; // Enable scrolling
+    min-height: 0; // Important for flex child to shrink
+  }
+
+  &__table {
+    width: 100%;
+    min-width: 650px;
+  }
+
+  &__head {
+    background-color: #f5f5f5;
+  }
+
+  &__header-row {
+    // Specific header row styles if needed
+  }
+
+  &__header-cell {
+    font-weight: 600;
+    background-color: #f5f5f5;
+    border-bottom: 2px solid #e0e0e0;
+    white-space: nowrap;
+
+    &:first-child {
+      padding-left: 16px;
+    }
+
+    &:last-child {
+      padding-right: 16px;
+    }
+  }
+
+  &__body {
+    // Body styles if needed
+  }
+
+  &__row {
+    &:hover {
+      background-color: #f9f9f9;
+    }
+
+    &--even {
+      background-color: #ffffff;
+    }
+
+    &--odd {
+      background-color: #fafafa;
+    }
+  }
+
+  &__cell {
+    border-bottom: 1px solid #e0e0e0;
+    padding: 12px 16px;
+    word-wrap: break-word;
+
+    &:first-child {
+      padding-left: 16px;
+    }
+
+    &:last-child {
+      padding-right: 16px;
+    }
+
+    &--negative {
+      color: #d32f2f;
+      font-weight: 500;
+    }
+  }
+
+  // New bottom actions container
+  &__bottom-actions {
+    flex-shrink: 0; // Don't shrink the bottom actions
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid #e0e0e0;
+    background-color: #fafafa;
+    //padding: 8px 16px;
+    gap: 16px; // Space between export and pagination
+    min-height: 52px; // Ensure consistent height
+  }
+
+  &__export-container {
+    display: flex;
+    align-items: center;
+  }
+
+  &__pagination {
+    flex-shrink: 0; // Don't shrink the pagination
+    border: none; // Remove border since it's handled by bottom-actions
+    background-color: transparent; // Remove background since it's handled by bottom-actions
+    
+    // Override MUI pagination styles to remove extra padding
+    .MuiTablePagination-toolbar {
+      padding-left: 0;
+      padding-right: 0;
+    }
+  }
+
+  &__fetching-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(255, 255, 255, 0.7);
+    z-index: 1;
+  }
+
+  // Print specific styles
+  &--print {
+    .common-table__container {
+      overflow: visible;
+    }
+
+    .common-table__table {
+      font-size: 11px;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+
+    .common-table__header-cell {
+      border: 1px solid #000;
+      background-color: #f5f5f5;
+      font-size: 10px;
+      font-weight: 600;
+      padding: 6px 4px;
+      text-align: center;
+      word-wrap: break-word;
+    }
+
+    .common-table__cell {
+      border: 1px solid #000;
+      font-size: 10px;
+      padding: 4px 3px;
+      word-wrap: break-word;
+      overflow: hidden;
+
+      &--negative {
+        color: #d32f2f;
+      }
+    }
+
+    .common-table__row {
+      &--even,
+      &--odd {
+        background-color: transparent;
+      }
+
+      &:hover {
+        background-color: transparent;
+      }
+    }
+
+    // Hide bottom actions in print mode
+    .common-table__bottom-actions {
+      display: none;
+    }
+
+    .common-table__pagination {
+      display: none;
+    }
+
+    .common-table__fetching-overlay {
+      display: none;
+    }
+  }
+
+  // Responsive design for smaller screens
+  @media (max-width: 768px) {
+    &__bottom-actions {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 12px;
+      padding: 12px 16px;
+    }
+
+    &__export-container {
+      justify-content: center;
+    }
+
+    &__pagination {
+      .MuiTablePagination-toolbar {
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+    }
+  }
+}
+
+// Print media queries
+@media print {
+  .common-table {
+    &__container {
+      overflow: visible !important;
+      width: 100% !important;
+    }
+
+    &__table {
+      width: 100% !important;
+      font-size: 9px !important;
+      border-collapse: collapse !important;
+      page-break-inside: auto;
+    }
+
+    &__header-cell {
+      font-size: 8px !important;
+      padding: 3px 2px !important;
+      background-color: #f5f5f5 !important;
+      border: 1px solid #000 !important;
+    }
+
+    &__cell {
+      font-size: 8px !important;
+      padding: 2px 1px !important;
+      border: 1px solid #000 !important;
+      word-wrap: break-word !important;
+      overflow: visible !important;
+    }
+
+    &__bottom-actions {
+      display: none !important;
+    }
+
+    &__pagination {
+      display: none !important;
+    }
+
+    &__fetching-overlay {
+      display: none !important;
+    }
+
+    &__row {
+      page-break-inside: avoid;
+    }
+  }
+}

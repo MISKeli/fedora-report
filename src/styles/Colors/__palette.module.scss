@@ -1,0 +1,119 @@
+// Primary Colors - Based on your specified red
+$primary-main: #772626;
+$primary-light: #a55555; // Lighter, softer red
+$primary-dark: #5a1c1c; // Darker red for contrast
+$primary-contrast-text: #ffffff;
+
+// Secondary Colors - Complementary green (ideal for agricultural theme)
+$secondary-main: #00a642; // Agricultural green
+$secondary-light: #4dd367; // Light green
+$secondary-dark: #007230; // Dark forest green
+$secondary-contrast-text: #ffffff;
+
+// Info Colors - Calm blue for information
+$info-main: #2980b9; // Professional blue
+$info-light: #74b9ff; // Light blue
+$info-dark: #1e5f8b; // Dark blue
+$info-contrast-text: #ffffff;
+
+// Warning Colors - Amber/yellow for caution
+$warning-main: #f39c12; // Warm amber
+$warning-light: #fdcb6e; // Light amber
+$warning-dark: #d68910; // Dark amber
+$warning-contrast-text: #2d3436;
+
+// Error Colors - Using your primary red theme
+$error-main: #e74c3c; // Bright red for errors
+$error-light: #ff7675; // Light red
+$error-dark: #c0392b; // Dark red
+$error-contrast-text: #ffffff;
+
+// Success Colors - Natural green
+$success-main: #27ae60; // Natural green
+$success-light: #55efc4; // Mint green
+$success-dark: #1e8449; // Deep green
+$success-contrast-text: #ffffff;
+
+// Tertiary Colors - Earth brown (agricultural theme)
+$tertiary-main: #8b4513; // Saddle brown
+$tertiary-light: #cd853f; // Peru brown
+$tertiary-dark: #5d2f08; // Dark brown
+$tertiary-contrast-text: #ffffff;
+
+// Background Colors - As specified
+$background-default: #fff0f0;
+$background-paper: #fdf9f9;
+$background-header: #f5f5f5;
+
+// Text Colors - Eye-friendly hierarchy
+$text-primary: #19191a; // As specified
+$text-secondary: #4a4a4a; // Medium gray for secondary text
+$text-disabled: #9e9e9e; // Light gray for disabled elements
+$text-hint: #bdbdbd; // Very light gray for hints/placeholders
+
+// Caution Colors - Orange for moderate alerts
+$caution-main: #ff6b35; // Warm orange
+$caution-light: #ff8f65; // Light orange
+$caution-dark: #e55100; // Dark orange
+$caution-contrast-text: #ffffff;
+
+// Additional Agricultural Theme Colors
+$earth-main: #8d6e63; // Earth brown
+$sky-main: #87ceeb; // Sky blue
+$sun-main: #ffd54f; // Sun yellow
+
+:export {
+  primary-main: $primary-main;
+  primary-light: $primary-light;
+  primary-dark: $primary-dark;
+  primary-contrast-text: $primary-contrast-text;
+
+  secondary-main: $secondary-main;
+  secondary-light: $secondary-light;
+  secondary-dark: $secondary-dark;
+  secondary-contrast-text: $secondary-contrast-text;
+
+  info-main: $info-main;
+  info-light: $info-light;
+  info-dark: $info-dark;
+  info-contrast-text: $info-contrast-text;
+
+  warning-main: $warning-main;
+  warning-light: $warning-light;
+  warning-dark: $warning-dark;
+  warning-contrast-text: $warning-contrast-text;
+
+  error-main: $error-main;
+  error-light: $error-light;
+  error-dark: $error-dark;
+  error-contrast-text: $error-contrast-text;
+
+  success-main: $success-main;
+  success-light: $success-light;
+  success-dark: $success-dark;
+  success-contrast-text: $success-contrast-text;
+
+  tertiary-main: $tertiary-main;
+  tertiary-light: $tertiary-light;
+  tertiary-dark: $tertiary-dark;
+  tertiary-contrast-text: $tertiary-contrast-text;
+
+  background-default: $background-default;
+  background-paper: $background-paper;
+  background-header: $background-header;
+
+  text-primary: $text-primary;
+  text-secondary: $text-secondary;
+  text-disabled: $text-disabled;
+  text-hint: $text-hint;
+
+  caution-main: $caution-main;
+  caution-light: $caution-light;
+  caution-dark: $caution-dark;
+  caution-contrast-text: $caution-contrast-text;
+
+  // Additional theme colors
+  earth-main: $earth-main;
+  sky-main: $sky-main;
+  sun-main: $sun-main;
+}

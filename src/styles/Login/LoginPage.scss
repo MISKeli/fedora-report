@@ -1,0 +1,185 @@
+@import "../Colors/_palette.module";
+
+// Simple animations
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.login {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: linear-gradient(
+    135deg,
+    $background-default 0%,
+    #f0f4f3 50%,
+    #e8f5e8 100%
+  );
+  padding: 20px;
+  box-sizing: border-box;
+
+  &__container {
+    width: 100%;
+    max-width: 420px;
+    animation: fadeIn 0.6s ease-out;
+  }
+
+  &__card {
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    background-color: $background-paper;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+    }
+
+    .MuiCardContent-root {
+      padding: 40px 32px;
+    }
+
+    &__header {
+      text-align: center;
+      margin-bottom: 32px;
+
+      &__logo {
+        width: 64px;
+        height: 64px;
+        margin: 0 auto 16px auto;
+        display: block;
+      }
+
+      &__title {
+        font-size: 1.8rem;
+        font-weight: 600;
+        color: $primary-main;
+        margin-bottom: 8px;
+      }
+
+      &__subtitle {
+        color: $text-secondary;
+        font-size: 0.95rem;
+        margin: 0;
+      }
+    }
+
+    &__form {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+
+      .MuiTextField-root {
+        .MuiOutlinedInput-root {
+          border-radius: 12px;
+          background-color: $background-default;
+          transition: all 0.3s ease;
+
+          &:hover .MuiOutlinedInput-notchedOutline {
+            border-color: $primary-main;
+          }
+
+          &.Mui-focused {
+            background-color: $background-paper;
+
+            .MuiOutlinedInput-notchedOutline {
+              border-color: $primary-main;
+              border-width: 2px;
+            }
+          }
+
+          .MuiInputAdornment-root .MuiSvgIcon-root {
+            color: $primary-main;
+          }
+        }
+
+        .MuiInputLabel-root.Mui-focused {
+          color: $primary-main;
+        }
+
+        .MuiFormHelperText-root.Mui-error {
+          color: $error-main;
+        }
+      }
+    }
+
+    &__button {
+      height: 48px;
+      border-radius: 12px;
+      background-color: $primary-main;
+      font-weight: 500;
+      text-transform: none;
+      transition: all 0.3s ease;
+
+      &:hover {
+        background-color: $primary-dark;
+        transform: translateY(-1px);
+        box-shadow: 0 6px 20px rgba($primary-main, 0.3);
+      }
+
+      &:disabled {
+        background-color: $text-disabled;
+        color: $background-paper;
+        transform: none;
+        box-shadow: none;
+      }
+    }
+  }
+
+  &__footer {
+    text-align: center;
+    margin-top: 24px;
+
+    .MuiTypography-root {
+      color: $text-secondary;
+      font-size: 0.875rem;
+    }
+  }
+
+  &__loading {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    &__spinner {
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-top: 2px solid white;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+  }
+}
+
+// Responsive
+@media (max-width: 480px) {
+  .login {
+    padding: 16px;
+
+    &__card .MuiCardContent-root {
+      padding: 32px 24px;
+    }
+
+    &__card__header__title {
+      font-size: 1.6rem;
+    }
+  }
+}

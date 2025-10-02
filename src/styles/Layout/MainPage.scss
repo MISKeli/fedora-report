@@ -1,0 +1,63 @@
+@import "../Colors/_palette.module";
+.main {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+  background-color: $background-paper;
+
+  &__sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    z-index: 1300;
+    transition: all 0.3s ease;
+
+    &--open {
+      width: 250px;
+    }
+
+    &--closed {
+      width: 60px;
+
+      @media (max-width: 768px) {
+        width: 0;
+        overflow: hidden;
+        transform: translateX(-100%);
+      }
+    }
+  }
+
+  &__content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    transition: margin-left 0.3s ease;
+
+    &--sidebar-open {
+      margin-left: 250px;
+
+      @media (max-width: 768px) {
+        margin-left: 0;
+      }
+    }
+
+    &--sidebar-closed {
+      margin-left: 60px;
+
+      @media (max-width: 768px) {
+        margin-left: 0;
+      }
+    }
+
+    &__outlet {
+      overflow: hidden;
+      //background-color: peachpuff;
+      padding: 0 10px;
+      flex: 1;
+    }
+  }
+}

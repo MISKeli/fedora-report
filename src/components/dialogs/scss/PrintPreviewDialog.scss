@@ -1,0 +1,205 @@
+// PrintPreviewDialog.scss - BEM Style
+.print-preview-dialog {
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 24px;
+    border-bottom: 1px solid #e0e0e0;
+  }
+
+  &__header-content {
+    flex-grow: 1;
+  }
+
+  &__title {
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  &__subtitle {
+    color: #666;
+    font-size: 0.875rem;
+  }
+
+  &__close-btn {
+    color: #666;
+
+    &:hover {
+      color: #333;
+    }
+
+    &:disabled {
+      color: #ccc;
+    }
+  }
+
+  &__content {
+    //background-color: pink;
+    padding: 0;
+    // overflow: hidden;
+    height: 100%;
+    
+  }
+
+  &__print-header {
+    text-align: center;
+    padding: 32px 24px 24px;
+    border-bottom: 2px solid #333;
+    margin-bottom: 24px;
+  }
+
+  &__print-title {
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #1a1a1a;
+  }
+
+  &__print-company {
+    font-weight: 500;
+    margin-bottom: 8px;
+    color: #333;
+  }
+
+  &__print-period {
+    color: #666;
+    margin-bottom: 4px;
+  }
+
+  &__print-filter {
+    color: #666;
+    margin-bottom: 4px;
+  }
+
+  &__print-generated {
+    color: #999;
+    font-size: 0.75rem;
+  }
+
+  &__table-container {
+    
+    height: 100%;
+
+  }
+
+  &__loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 64px;
+  }
+
+  &__no-data {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 64px;
+  }
+
+
+  &__summary-total {
+    font-weight: 600;
+    color: #333;
+  }
+
+  &__summary-filter {
+    // Chip styles are handled by MUI
+  }
+
+  &__actions {
+    padding: 16px 24px;
+    border-top: 1px solid #e0e0e0;
+    //background-color: #f8f9fa;
+    gap: 12px;
+  }
+
+  // Print mode specific styles
+  &.print-mode {
+    .print-preview-dialog__preview-paper {
+      box-shadow: none;
+      border-radius: 0;
+    }
+
+    .print-preview-dialog__preview-wrapper {
+      padding: 0;
+      background-color: white;
+    }
+  }
+
+  // Responsive styles
+  @media (max-width: 768px) {
+    .MuiDialog-paper {
+      margin: 8px;
+      width: calc(100% - 16px);
+      height: calc(100% - 16px);
+      max-height: none;
+    }
+
+    &__header {
+      padding: 12px 16px;
+    }
+
+    &__preview-wrapper {
+      
+      padding: 12px;
+      
+    }
+
+    &__print-header {
+      padding: 24px 16px 16px;
+    }
+
+    &__table-container {
+ 
+      padding: 0 16px;
+      
+       overflow: auto;
+
+    }
+
+    &__summary {
+      padding: 12px 16px;
+      flex-direction: column;
+      gap: 8px;
+      align-items: flex-start;
+    }
+
+    &__actions {
+      padding: 12px 16px;
+    }
+  }
+
+  // Dark mode support
+  @media (prefers-color-scheme: dark) {
+    &__preview-wrapper {
+     // background-color: #1a1a1a;
+    }
+
+    &__preview-paper {
+     // background-color: #2d2d2d;
+      color: #ffffff;
+    }
+
+    &__print-header {
+     // border-bottom-color: #666;
+    }
+
+    &__print-title {
+      color: #2d2d2d;
+    }
+
+    &__print-company {
+      color: #2d2d2d;
+    }
+
+    &__summary {
+    //   background-color: #3d3d3d;
+    //   border-top-color: #666;
+    }
+
+    &__actions {
+    //   background-color: #3d3d3d;
+    //   border-top-color: #666;
+     }
+  }
+}
