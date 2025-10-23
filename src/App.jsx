@@ -18,7 +18,7 @@ function App() {
 
             <RouterProvider router={router} />
           </LocalizationProvider>
-        </ProvidesTheme>
+        </ProvidesTheme> 
       </Provider>
     </>
   );

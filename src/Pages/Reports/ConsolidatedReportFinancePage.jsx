@@ -1,6 +1,11 @@
 import DynamicReportPage from "../../components/pages/DynamicReportPage";
-import { useLazyOrderServedQuery, useLazyOrderSummaryQuery, useOrderSummaryQuery } from "../../features/api/orderSummaryApi";
+import {
+  useLazyOrderServedQuery,
+  useLazyOrderSummaryQuery,
+  useOrderSummaryQuery,
+} from "../../features/api/orderSummaryApi";
 import { info } from "../../schema/info";
+import "../../styles/Pages/orderSummary.scss";
 
 const ConsolidatedReportFinancePage = () => {
   const config = {
@@ -19,7 +24,7 @@ const ConsolidatedReportFinancePage = () => {
       detailsHeaders: null, // Will use moduleInfo.served
     },
     searchConfig: {
-      placeholder: info.consolidatedFinanceReport.placeHolader,
+      //placeholder: info.consolidatedFinanceReport.placeHolader,
       hasDatePicker: true,
       updateQueryParams: true,
     },
@@ -28,7 +33,7 @@ const ConsolidatedReportFinancePage = () => {
       showPrintExport: true,
       excelLabel: "Download Report sample",
       variant: "contained",
-      size: "medium",
+      //size: "small",
     },
     customClassName: "order",
   };

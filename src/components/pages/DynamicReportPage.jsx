@@ -31,6 +31,7 @@ import { info } from "../../schema/info";
  * @param {string} config.searchConfig.placeholder - Search placeholder text
  * @param {boolean} config.searchConfig.hasDatePicker - Whether to show date picker
  * @param {boolean} config.searchConfig.updateQueryParams - Whether to update URL params
+ * @param {string} config.searchConfig.searchType - Search type: "text", "number", or "both"
  * @param {Object} config.exportConfig - Export configuration
  * @param {boolean} config.exportConfig.showExcelExport - Show Excel export
  * @param {boolean} config.exportConfig.showPrintExport - Show Print export
@@ -57,7 +58,10 @@ const DynamicReportPage = ({ config }) => {
   // Get module info
   const moduleInfo = info[moduleKey] || {};
   const header = moduleInfo.tableHeader || [];
-  const detailsHeaders = tableConfig.detailsHeaders || moduleInfo.served || [];
+  const detailsHeaders =
+    tableConfig.detailsHeaders !== undefined
+      ? tableConfig.detailsHeaders
+      : moduleInfo.served || [];
 
   // State management
   const [searchValue, setSearchValue] = useState("");
@@ -79,17 +83,25 @@ const DynamicReportPage = ({ config }) => {
   const [triggerLazyQuery] = useLazyQuery();
   const triggerDetailsQuery = useDetailsQuery ? useDetailsQuery()[0] : null;
 
-  // Main data query
-  const shouldSkipQuery =
-    !reportData || !reportData.startDate || !reportData.endDate;
+  // Determine if hasDatePicker is enabled (defaults to true if not specified)
+  const hasDatePicker = searchConfig.hasDatePicker !== false;
 
+  // Main data query
+  // Only skip if date picker is ENABLED but dates are missing
+  // If date picker is disabled, never skip the query
+  const shouldSkipQuery =
+    hasDatePicker &&
+    (!reportData || !reportData.startDate || !reportData.endDate);
+
+  const searchParamName = searchConfig.searchParamName || "search";
   const queryParams = {
     apiKey: apiKey,
     usePagination: true,
-    search: searchValue,
+    [searchParamName]: searchValue,
     pageNumber: page + 1,
     pageSize: rowsPerPage,
-    ...reportData,
+    // Only spread reportData if it exists and has values
+    ...(reportData && Object.keys(reportData).length > 0 ? reportData : {}),
   };
 
   const {
@@ -163,7 +175,7 @@ const DynamicReportPage = ({ config }) => {
 
   // Export handlers
   const handleExcelExport = useCallback(async () => {
-    if (!reportData || !reportData.startDate || !reportData.endDate) {
+    if (shouldSkipQuery) {
       toast.error("Please select a date range before exporting.");
       return;
     }
@@ -187,6 +199,7 @@ const DynamicReportPage = ({ config }) => {
       setIsExporting(false);
     }
   }, [
+    shouldSkipQuery,
     exportToExcel,
     reportData,
     apiKey,
@@ -280,7 +293,8 @@ const DynamicReportPage = ({ config }) => {
             searchValue={searchValue}
             setReportData={handleReportDataChange}
             updateQueryParams={searchConfig.updateQueryParams !== false}
-            hasDatePicker={searchConfig.hasDatePicker !== false}
+            hasDatePicker={hasDatePicker}
+            searchType={searchConfig.searchType || "text"}
           />
         </Box>
       </Box>

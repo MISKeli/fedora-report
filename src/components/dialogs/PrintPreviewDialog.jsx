@@ -360,13 +360,16 @@ const PrintPreviewDialog = ({
         try {
           iframe.contentWindow.focus();
           iframe.contentWindow.print();
-          toast.success("Print job sent successfully!", {
-            duration: 3000,
-            position: "top-right",
-          });
-          setTimeout(() => document.body.removeChild(iframe), 1000);
+          
+          setTimeout(() => {
+            if (document.body.contains(iframe)) {
+              document.body.removeChild(iframe);
+            }
+          }, 1000);
         } catch (error) {
-          document.body.removeChild(iframe);
+          if (document.body.contains(iframe)) {
+            document.body.removeChild(iframe);
+          }
           throw error;
         }
       };

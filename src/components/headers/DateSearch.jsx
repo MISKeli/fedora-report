@@ -7,9 +7,10 @@ import {
   IconButton,
   InputBase,
   Typography,
+  Tooltip,
   useTheme,
 } from "@mui/material";
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect, useCallback } from "react";
 import {
   SearchRounded,
   ClearRounded,
@@ -21,6 +22,7 @@ import moment from "moment";
 import { useRememberQueryParams } from "../../hooks/useRememberQueryParams";
 import useDebounce from "../../hooks/useDebounce";
 import { info } from "../../schema/info";
+import CustomTooltip from "../toolTip/CustomToolTip";
 
 const DateSearch = ({
   setReportData,
@@ -30,6 +32,7 @@ const DateSearch = ({
   updateQueryParams = false,
   initialDate = null,
   hasDatePicker = true,
+  searchType = "text", // "text", "number", or "both"
 }) => {
   const theme = useTheme();
   const currentDate = moment();
@@ -73,6 +76,7 @@ const DateSearch = ({
         onSearchChange(paramValue);
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Update dates when initialDate changes
@@ -87,9 +91,19 @@ const DateSearch = ({
   // Handle debounced search changes
   useEffect(() => {
     if (onSearchChange) {
-      onSearchChange(debouncedSearch);
+      let processedValue = debouncedSearch;
+
+      // Process based on searchType
+      if (searchType === "number" && debouncedSearch) {
+        // Convert to number for "number" type
+        const numValue = parseInt(debouncedSearch, 10);
+        processedValue = isNaN(numValue) ? "" : numValue;
+      }
+      // For "text" and "both" types, keep as string
+
+      onSearchChange(processedValue);
     }
-  }, [debouncedSearch, onSearchChange]);
+  }, [debouncedSearch, onSearchChange, searchType]);
 
   // Update query parameters for search (separate effect)
   useEffect(() => {
@@ -101,6 +115,7 @@ const DateSearch = ({
         { retain: true }
       );
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedSearch, updateQueryParams]);
 
   // Search handlers
@@ -110,16 +125,32 @@ const DateSearch = ({
   };
 
   const handleSearchChange = (e) => {
-    setSearch(e.target.value);
+    const value = e.target.value;
+
+    // Validate input based on searchType
+    if (searchType === "number") {
+      // Only allow digits
+      if (value && !/^\d+$/.test(value)) {
+        return; // Block non-numeric input
+      }
+    } else if (searchType === "both") {
+      // Allow alphanumeric and spaces only
+      if (value && !/^[a-zA-Z0-9\s]*$/.test(value)) {
+        return; // Block special characters
+      }
+    }
+    // searchType === "text" allows everything (string and numbers as string)
+
+    setSearch(value);
   };
 
-  const handleSearchClear = () => {
+  const handleSearchClear = useCallback(() => {
     setSearch("");
     if (onSearchChange) {
       onSearchChange("");
     }
     inputRef.current?.focus();
-  };
+  }, [onSearchChange]);
 
   const handleSearchBlur = () => {
     if (!search.trim()) {
@@ -163,7 +194,9 @@ const DateSearch = ({
         );
       }
 
-      await setReportData(reportData);
+      if (setReportData) {
+        await setReportData(reportData);
+      }
     } catch (error) {
       console.error("Error fetching report data:", error);
     } finally {
@@ -177,19 +210,37 @@ const DateSearch = ({
     return false;
   };
 
+  // Get input type based on searchType
+  const getInputType = () => {
+    if (searchType === "number") return "tel"; // Use tel to show numeric keyboard on mobile
+    return "text";
+  };
+
+  // Get tooltip text based on searchType
+  const getTooltipText = () => {
+    switch (searchType) {
+      case "number":
+        return "Numbers only";
+      case "both":
+        return "Alphanumeric only (no special characters)";
+      case "text":
+      default:
+        return "Text search (strings and numbers as text)";
+    }
+  };
+
   return (
     <LocalizationProvider dateAdapter={AdapterMoment}>
       <Box
         className="date-search-container"
         sx={{
-      //backgroundColor:"pink",
           display: "flex",
-          alignItems: "center", // allow labels to float fully
+          alignItems: "center",
           justifyContent: "space-between",
           gap: 2,
           p: 1,
-          overflowX: "auto", // only scroll sideways
-          overflowY: "visible", // allow labels to render fully
+          overflowX: "auto",
+          overflowY: "visible",
           "&::-webkit-scrollbar": {
             height: 6,
           },
@@ -199,43 +250,39 @@ const DateSearch = ({
           },
         }}
       >
-        {/* Scrollable section */}
-       
-        
+        {/* Date Range Pickers */}
+        {hasDatePicker && (
+          <>
+            <DatePicker
+              label="Start Date"
+              value={startDate}
+              onChange={handleFromDateChange}
+              slotProps={{
+                textField: {
+                  variant: "outlined",
+                  size: "small",
+                  sx: { minWidth: 160, flexShrink: 0 },
+                },
+              }}
+            />
 
-          {/* Date Range Pickers */}
-          {hasDatePicker && (
-            <>
-              <DatePicker
-                label="Start Date"
-                value={startDate}
-                onChange={handleFromDateChange}
-                slotProps={{
-                  textField: {
-                    variant: "outlined",
-                    size: "small",
-                    sx: { minWidth: 160, flexShrink: 0 },
-                  },
-                }}
-              />
+            <DatePicker
+              label="End Date"
+              value={endDate}
+              onChange={handleToDateChange}
+              minDate={startDate}
+              slotProps={{
+                textField: {
+                  variant: "outlined",
+                  size: "small",
+                  sx: { minWidth: 160, flexShrink: 0 },
+                },
+              }}
+            />
+          </>
+        )}
 
-              <DatePicker
-                label="End Date"
-                value={endDate}
-                onChange={handleToDateChange}
-                minDate={startDate}
-                slotProps={{
-                  textField: {
-                    variant: "outlined",
-                    size: "small",
-                    sx: { minWidth: 160, flexShrink: 0 },
-                  },
-                }}
-              />
-            </>
-          )}
-       
-        {/* Fixed Button (always visible) */}
+        {/* Generate Button */}
         {hasDatePicker && setReportData && (
           <Button
             variant="contained"
@@ -255,7 +302,7 @@ const DateSearch = ({
               textTransform: "none",
               fontWeight: 600,
               boxShadow: "0 2px 8px rgba(25, 118, 210, 0.2)",
-              flexShrink: 0, // prevents shrinking
+              flexShrink: 0,
               "&:hover": {
                 boxShadow: "0 4px 12px rgba(25, 118, 210, 0.3)",
               },
@@ -267,14 +314,19 @@ const DateSearch = ({
           >
             {loading ? "Loading..." : "Generate"}
           </Button>
-       
-       )}
-     {hasDatePicker && setReportData && (  <Divider orientation="vertical" variant="middle" flexItem />)}
-        
-          {/* Search */}
+        )}
+
+        {hasDatePicker && setReportData && (
+          <Divider orientation="vertical" variant="middle" flexItem />
+        )}
+
+        {/* Search with Tooltip */}
+        <CustomTooltip title={getTooltipText()}  bgcolor={theme.palette.secondary.main} color={theme.palette.secondary.contrastText}>
           <Box sx={{ position: "relative", flexShrink: 0 }}>
             <InputBase
               ref={inputRef}
+              type={getInputType()}
+              inputMode={searchType === "number" ? "numeric" : "text"}
               placeholder={searchPlaceHolder}
               value={search}
               onChange={handleSearchChange}
@@ -338,11 +390,14 @@ const DateSearch = ({
               }}
             >
               Search
+              {searchType === "number" && " (Numbers only)"}
+              {searchType === "both" && " (Alphanumeric)"}
             </Typography>
           </Box>
+        </CustomTooltip>
+        
       </Box>
     </LocalizationProvider>
-
   );
 };
 

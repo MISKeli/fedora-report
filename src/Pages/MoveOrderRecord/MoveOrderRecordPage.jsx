@@ -37,13 +37,15 @@ const MoveOrderRecordPage = () => {
     data: moveOrder,
     isLoading: isDataLoading,
     isFetching: isDataFetching,
+    isError,
+    error,
   } = useMoveOrderQuery(
     {
       apiKey: apiKey,
       id: itemCodeSearch,
     },
     {
-      skip: !itemCodeSearch || itemCodeSearch.trim() === "", // Skip query if no search value
+      skip: !itemCodeSearch,
     }
   );
 
@@ -512,10 +514,19 @@ const MoveOrderRecordPage = () => {
     return () => document.removeEventListener("keydown", handleKeyPress);
   }, [handleDirectPrint]);
 
-  // Check if we should show the move order data
-  const shouldShowMoveOrderData =
-    itemCodeSearch && itemCodeSearch.trim() !== "";
+  // Check if we have valid data
+  const hasValidData = moveOrder && moveOrder.id && !isError;
 
+  // Show toast when error occurs (only once per error state change)
+  if (isError && itemCodeSearch && !isDataLoading) {
+    const errorMessage = error?.data?.message || "Move Order Slip not found";
+    toast.error(errorMessage);
+  }
+
+  // Determine what to show
+  const shouldShowMoveOrderData = Boolean(itemCodeSearch);
+  const showError = shouldShowMoveOrderData && !isDataLoading && !hasValidData;
+  const showData = shouldShowMoveOrderData && hasValidData;
   return (
     <>
       <Box className="moveOrder">
@@ -528,12 +539,13 @@ const MoveOrderRecordPage = () => {
               updateQueryParams={true}
               hasDatePicker={false}
               searchPlaceHolder={info.moveOrder.placeHolader}
+              searchType="number"
             />
           </Box>
         </Box>
 
         {/* Only render move order content if there's a search value */}
-        {shouldShowMoveOrderData && (
+        {showData && (
           <Box
             className="moveOrder__container"
             ref={printContainerRef}
@@ -669,7 +681,7 @@ const MoveOrderRecordPage = () => {
         )}
 
         {/* Only show status and export controls when there's data */}
-        {shouldShowMoveOrderData && (
+        {showData && (
           <Box className="moveOrder__status">
             <Box className="moveOrder__status__export">
               <ExportMenu
@@ -695,7 +707,7 @@ const MoveOrderRecordPage = () => {
             </Box>
 
             {/* Status indicator */}
-            {moveOrder && (
+            {showError && (
               <Box className="moveOrder__status__info">
                 <Typography
                   variant="body2"
@@ -711,7 +723,24 @@ const MoveOrderRecordPage = () => {
           </Box>
         )}
 
-        {/* Show placeholder message when no search */}
+        {/* Show error state */}
+        {showError && (
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              minHeight: "300px",
+              color: "error.main",
+            }}
+          >
+            <Typography variant="h6">
+              Move Order ID "{itemCodeSearch}" not found
+            </Typography>
+          </Box>
+        )}
+
+        {/* Show placeholder when no search */}
         {!shouldShowMoveOrderData && (
           <Box
             sx={{

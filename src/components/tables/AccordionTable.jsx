@@ -151,15 +151,15 @@ const AccordionTable = ({
                       align={
                         headerItem.align || getCellAlignment(headerItem.type)
                       }
-                      sx={{
-                        backgroundColor: "background.paper",
-                        fontWeight: "bold",
-                        position: "sticky",
-                        top: 0,
-                        zIndex: 1,
-                        borderBottom: "2px solid",
-                        borderBottomColor: "divider",
-                      }}
+                      // sx={{
+                      //   backgroundColor: "background.paper",
+                      //   fontWeight: "bold",
+                      //   position: "sticky",
+                      //   top: 0,
+                      //   zIndex: 1,
+                      //   borderBottom: "2px solid",
+                      //   borderBottomColor: "divider",
+                      // }}
                     >
                       {headerItem.name || headerItem.label || headerItem.id}
                     </TableCell>
@@ -170,11 +170,11 @@ const AccordionTable = ({
                 {detailsData.map((detail, rowIndex) => (
                   <TableRow
                     key={rowIndex}
-                    sx={{
-                      "&:hover": {
-                        backgroundColor: "action.hover",
-                      },
-                    }}
+                    // sx={{
+                    //   "&:hover": {
+                    //     backgroundColor: "action.hover",
+                    //   },
+                    // }}
                   >
                     {detailsHeaders.map((headerItem, colIndex) => {
                       const value = detail[headerItem.id];

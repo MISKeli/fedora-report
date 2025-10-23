@@ -15,7 +15,10 @@ import AssessmentOutlined from "@mui/icons-material/AssessmentOutlined";
 import AssessmentRounded from "@mui/icons-material/Assessment";
 import AccountBalanceWalletOutlined from "@mui/icons-material/AccountBalanceWalletOutlined";
 import AccountBalanceWallet from "@mui/icons-material/AccountBalanceWallet";
-import { AccountBalanceOutlined, AccountBalanceRounded } from "@mui/icons-material";
+import {
+  AccountBalanceOutlined,
+  AccountBalanceRounded,
+} from "@mui/icons-material";
 
 export const appConfig = [
   {
@@ -69,7 +72,7 @@ export const appConfig = [
     component: null, // No direct component for parent
     icon: AssessmentOutlined,
     iconActive: AssessmentRounded,
-    permissions: ["Move Order Record"], // Parent permission
+    //permissions: ["Move Order Record"], // Parent permission
     showInNav: true,
     children: [
       {
@@ -83,7 +86,7 @@ export const appConfig = [
         showInNav: true,
         children: null,
       },
-       {
+      {
         name: "Consolidated Report (Audit)",
         section: "consolidated-report-audit",
         path: "/consolidated-audit", // This will become /reports/consolidated-finance
@@ -94,18 +97,18 @@ export const appConfig = [
         showInNav: true,
         children: null,
       },
-      // You can add more report subcategories here
-      // {
-      //   name: "Sales Report",
-      //   section: "sales-report",
-      //   path: "/sales",
-      //   component: SalesReportPage,
-      //   icon: TrendingUpOutlined,
-      //   iconActive: TrendingUp,
-      //   permissions: ["Sales Report"],
-      //   showInNav: true,
-      //   children: null,
-      // },
+      //     // You can add more report subcategories here
+      //     // {
+      //     //   name: "Sales Report",
+      //     //   section: "sales-report",
+      //     //   path: "/sales",
+      //     //   component: SalesReportPage,
+      //     //   icon: TrendingUpOutlined,
+      //     //   iconActive: TrendingUp,
+      //     //   permissions: ["Sales Report"],
+      //     //   showInNav: true,
+      //     //   children: null,
+      //     // },
     ],
   },
 ];
@@ -226,29 +229,35 @@ export const findItemByPath = (path, config = appConfig, parentPath = "") => {
 // New helper function to check if a parent has any active children
 export const hasActiveChild = (item, currentPath, parentPath = "") => {
   if (!item.children) return false;
-  
-  return item.children.some(child => {
-    const childFullPath = generateFullPath(child, generateFullPath(item, parentPath));
-    return currentPath.startsWith(childFullPath) || hasActiveChild(child, currentPath, generateFullPath(item, parentPath));
+
+  return item.children.some((child) => {
+    const childFullPath = generateFullPath(
+      child,
+      generateFullPath(item, parentPath)
+    );
+    return (
+      currentPath.startsWith(childFullPath) ||
+      hasActiveChild(child, currentPath, generateFullPath(item, parentPath))
+    );
   });
 };
 
 // New helper function to get the first accessible child route
 export const getFirstAccessibleChild = (item, userPermissions = []) => {
   if (!item.children) return null;
-  
+
   for (const child of item.children) {
     if (child.showInNav && hasPermission(child.permissions, userPermissions)) {
       return child;
     }
-    
+
     // If child has children, check recursively
     if (child.children) {
       const grandChild = getFirstAccessibleChild(child, userPermissions);
       if (grandChild) return grandChild;
     }
   }
-  
+
   return null;
 };
 

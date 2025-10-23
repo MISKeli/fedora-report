@@ -15,6 +15,7 @@ const authSlice = createSlice({
     user: initialUser,
     pageNumber: 0,
     pageSize: 25,
+    
   },
   reducers: {
     loginSlice: (state, action) => {
@@ -26,6 +27,7 @@ const authSlice = createSlice({
       state.isAuthenticated = false;
       state.apiKey = null; // Changed from token to apiKey
     },
+  
   },
 });
 
@@ -36,5 +38,6 @@ export const {
   setPokedData,
   setPageNumber,
   setPageSize,
+  setDataToParent,
 } = authSlice.actions;
 export default authSlice.reducer;

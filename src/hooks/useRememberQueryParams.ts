@@ -1,4 +1,5 @@
 import { useSearchParams } from "react-router-dom";
+import { useCallback, useMemo, useRef } from "react";
 
 interface QueryConfig {
   retain?: boolean;
@@ -17,48 +18,132 @@ export const useRememberQueryParams = (): [
   (paramKey?: string | string[]) => void
 ] => {
   const [searchParams, setSearchParams] = useSearchParams();
-  // Convert searchParams to a regular object
-  const currentParams = Object.fromEntries(searchParams.entries());
 
-  // Function to set query parameters
-  const setQueryParams: SetQueryParamsAction = (
-    params,
-    config = { retain: false }
-  ) => {
-    const newParams = {
-      ...(config.retain ? Object.fromEntries(searchParams.entries()) : {}),
-    };
+  // Convert to string to create a stable reference
+  const paramsString = searchParams.toString();
 
-    Object.entries(params).forEach(([key, value]) => {
-      if (value === null || value === undefined) {
-        delete newParams[key];
-      } else {
-        newParams[key] = String(value);
-      }
-    });
+  // Memoize the current params object based on the string representation
+  const currentParams = useMemo(
+    () => Object.fromEntries(searchParams.entries()),
+    [paramsString] // Use string for stable dependency
+  );
 
-    setSearchParams(newParams);
-  };
+  // Use ref to access latest setSearchParams without causing re-renders
+  const setSearchParamsRef = useRef(setSearchParams);
+  setSearchParamsRef.current = setSearchParams;
 
-  // Function to remove query parameters - now handles no arguments
-  const removeQueryParams = (paramKey?: string | string[]) => {
-    if (!paramKey) {
-      // Actually clear all parameters when called with no arguments
-      setSearchParams({});
-      return;
-    }
+  // Memoize the setQueryParams function - now stable
+  const setQueryParams: SetQueryParamsAction = useCallback(
+    (params, config = { retain: false }) => {
+      setSearchParamsRef.current((currentSearchParams) => {
+        const newParams = {
+          ...(config.retain
+            ? Object.fromEntries(currentSearchParams.entries())
+            : {}),
+        };
 
-    // Convert searchParams to a plain object
-    const newParams = Object.fromEntries(searchParams.entries());
+        Object.entries(params).forEach(([key, value]) => {
+          if (value === null || value === undefined) {
+            delete newParams[key];
+          } else {
+            newParams[key] = String(value);
+          }
+        });
 
-    const keysToRemove = Array.isArray(paramKey) ? paramKey : [paramKey];
+        return newParams;
+      });
+    },
+    [] // No dependencies - completely stable
+  );
 
-    keysToRemove.forEach((key) => {
-      delete newParams[key];
-    });
+  // Memoize the removeQueryParams function - now stable
+  const removeQueryParams = useCallback(
+    (paramKey?: string | string[]) => {
+      setSearchParamsRef.current((currentSearchParams) => {
+        if (!paramKey) {
+          // Clear all parameters when called with no arguments
+          return {};
+        }
 
-    setSearchParams(newParams);
-  };
+        // Convert searchParams to a plain object
+        const newParams = Object.fromEntries(currentSearchParams.entries());
+
+        const keysToRemove = Array.isArray(paramKey) ? paramKey : [paramKey];
+
+        keysToRemove.forEach((key) => {
+          delete newParams[key];
+        });
+
+        return newParams;
+      });
+    },
+    [] // No dependencies - completely stable
+  );
 
   return [currentParams, setQueryParams, removeQueryParams];
 };
+
+// import { useSearchParams } from "react-router-dom";
+
+// interface QueryConfig {
+//   retain?: boolean;
+// }
+
+// type QueryValue = string | number | boolean | null | undefined;
+
+// type SetQueryParamsAction = (
+//   params: Record<string, QueryValue>,
+//   config?: QueryConfig
+// ) => void;
+
+// export const useRememberQueryParams = (): [
+//   Record<string, string>,
+//   SetQueryParamsAction,
+//   (paramKey?: string | string[]) => void
+// ] => {
+//   const [searchParams, setSearchParams] = useSearchParams();
+//   // Convert searchParams to a regular object
+//   const currentParams = Object.fromEntries(searchParams.entries());
+
+//   // Function to set query parameters
+//   const setQueryParams: SetQueryParamsAction = (
+//     params,
+//     config = { retain: false }
+//   ) => {
+//     const newParams = {
+//       ...(config.retain ? Object.fromEntries(searchParams.entries()) : {}),
+//     };
+
+//     Object.entries(params).forEach(([key, value]) => {
+//       if (value === null || value === undefined) {
+//         delete newParams[key];
+//       } else {
+//         newParams[key] = String(value);
+//       }
+//     });
+
+//     setSearchParams(newParams);
+//   };
+
+//   // Function to remove query parameters - now handles no arguments
+//   const removeQueryParams = (paramKey?: string | string[]) => {
+//     if (!paramKey) {
+//       // Actually clear all parameters when called with no arguments
+//       setSearchParams({});
+//       return;
+//     }
+
+//     // Convert searchParams to a plain object
+//     const newParams = Object.fromEntries(searchParams.entries());
+
+//     const keysToRemove = Array.isArray(paramKey) ? paramKey : [paramKey];
+
+//     keysToRemove.forEach((key) => {
+//       delete newParams[key];
+//     });
+
+//     setSearchParams(newParams);
+//   };
+
+//   return [currentParams, setQueryParams, removeQueryParams];
+// };
