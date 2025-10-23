@@ -4,15 +4,6 @@ const loginApi = indexApi
   .enhanceEndpoints({ addTagTypes: ["auth"] })
   .injectEndpoints({
     endpoints: (builder) => ({
-      //GL API
-      //   postLogin: builder.mutation({
-      //     query: (body) => ({
-      //       url: "/auth",
-      //       method: "POST",
-      //       body,
-      //     }),
-      //   }),
-      // }),
       //FEDORA API
       Auth: builder.mutation({
         query: (body) => ({
@@ -24,4 +15,4 @@ const loginApi = indexApi
     }),
   });
 
-export const { usePostLoginMutation, useAuthMutation } = loginApi;
+export const { useAuthMutation } = loginApi;
