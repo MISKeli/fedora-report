@@ -1,10 +1,11 @@
+
 import DynamicReportPage from "../../components/pages/DynamicReportPage";
 import {
   useLazyOrderServedQuery,
   useLazyOrderSummaryQuery,
   useOrderSummaryQuery,
 } from "../../features/api/orderSummaryApi";
-import { info } from "../../schema/info";
+
 import "../../styles/Pages/orderSummary.scss";
 
 const OrderSummaryPage = () => {

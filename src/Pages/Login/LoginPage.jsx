@@ -5,13 +5,13 @@ import Box from "@mui/material/Box";
 import React, { useState } from "react";
 import Button from "@mui/material/Button";
 import { Controller, useForm } from "react-hook-form";
-import { InputAdornment, TextField, IconButton } from "@mui/material";
-import {
-  AccountCircle,
-  Lock,
-  Visibility,
-  VisibilityOff,
-} from "@mui/icons-material";
+import InputAdornment from "@mui/material/InputAdornment";
+import TextField from "@mui/material/TextField";
+import IconButton from "@mui/material/IconButton";
+import AccountCircle from "@mui/icons-material/AccountCircle";
+import Lock from "@mui/icons-material/Lock";
+import Visibility from "@mui/icons-material/Visibility";
+import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import { yupResolver } from "@hookform/resolvers/yup";
 import "../../styles/Login/LoginPage.scss";
 import { loginSchema } from "../../schema/validation";
@@ -19,7 +19,7 @@ import { useAuthMutation } from "../../features/api/loginApi";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { encrypt } from "../../utils/encrypt";
-import { loginSlice, setDataToParent } from "../../features/slice/authSlice";
+import { loginSlice } from "../../features/slice/authSlice";
 import { appConfig } from "../../routes/appConfig";
 import { toast } from "sonner";
 import { info } from "../../schema/info";
@@ -42,7 +42,6 @@ const LoginPage = () => {
   const {
     control,
     handleSubmit,
-    watch,
     formState: { errors, isValid },
   } = useForm({
     defaultValues: { username: "", password: "" },
@@ -50,7 +49,7 @@ const LoginPage = () => {
     mode: "onChange",
   });
 
-  const [login, { isLoading }] = useAuthMutation();
+  const [login] = useAuthMutation();
 
   // Check user permissions and find first allowed route
   const checkUserPermissions = (userPermissions, appConfig) => {
@@ -68,7 +67,7 @@ const LoginPage = () => {
         if (
           item.permissions &&
           item.permissions.some((permission) =>
-            userPermissions.includes(permission)
+            userPermissions.includes(permission),
           )
         ) {
           return currentPath;

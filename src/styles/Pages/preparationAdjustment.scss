@@ -1,0 +1,29 @@
+.preparationAdjustment {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+
+  &__header {
+    flex-shrink: 0;
+
+    &__content {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 8px 16px;
+      overflow: visible;
+    }
+  }
+
+  &__body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    overflow: hidden;
+    padding: 0 16px 16px;
+  }
+}

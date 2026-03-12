@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useState } from "react";
-import { Box } from "@mui/material";
+import { useCallback, useEffect, useState } from "react";
+import Box from "@mui/material/Box";
 import { useSelector } from "react-redux";
 import { toast } from "sonner";
 
@@ -13,32 +13,26 @@ import {
   usePrintData,
 } from "../dialogs/PrintPreviewDialog";
 import { info } from "../../schema/info";
+import useDebounce from "../../hooks/useDebounce";
 
 /**
  * Dynamic Report Page Component
  *
- * @param {Object} config - Configuration object for the report
- * @param {string} config.moduleKey - Key from info object (e.g., 'orderSummary')
- * @param {Function} config.useQuery - RTK Query hook for fetching data
- * @param {Function} config.useLazyQuery - RTK Query lazy hook for export/print
- * @param {Function} config.useDetailsQuery - Optional lazy hook for expandable details
- * @param {Object} config.tableConfig - Table configuration
- * @param {boolean} config.tableConfig.isAccordion - Whether to use AccordionTable or CommonTable
- * @param {string} config.tableConfig.keyField - Primary key field for accordion
- * @param {string} config.tableConfig.quantityField - Quantity field for accordion
- * @param {Array} config.tableConfig.detailsHeaders - Headers for expandable details
- * @param {Object} config.searchConfig - Search configuration
- * @param {string} config.searchConfig.placeholder - Search placeholder text
- * @param {boolean} config.searchConfig.hasDatePicker - Whether to show date picker
- * @param {boolean} config.searchConfig.updateQueryParams - Whether to update URL params
- * @param {string} config.searchConfig.searchType - Search type: "text", "number", or "both"
- * @param {Object} config.exportConfig - Export configuration
- * @param {boolean} config.exportConfig.showExcelExport - Show Excel export
- * @param {boolean} config.exportConfig.showPrintExport - Show Print export
- * @param {string} config.exportConfig.excelLabel - Label for Excel button
- * @param {string} config.exportConfig.variant - Button variant
- * @param {string} config.exportConfig.size - Button size
- * @param {string} config.customClassName - Custom CSS class for styling
+ * @param {Object} config
+ * @param {string} config.moduleKey
+ * @param {Function} config.useQuery
+ * @param {Function} config.useLazyQuery
+ * @param {Function} config.useDetailsQuery
+ * @param {Object} config.tableConfig
+ * @param {boolean} config.tableConfig.isAccordion
+ * @param {string}  config.tableConfig.keyField
+ * @param {string}  config.tableConfig.quantityField  - field used for disabling expand (0 → disabled)
+ * @param {Array}   config.tableConfig.detailsHeaders
+ * @param {string}  config.tableConfig.clickableField - field id in details rows that is clickable
+ * @param {Function} config.tableConfig.onDetailCellClick - (detailRow, parentRow) => void
+ * @param {Object} config.searchConfig
+ * @param {Object} config.exportConfig
+ * @param {string} config.customClassName
  */
 const DynamicReportPage = ({ config }) => {
   const {
@@ -46,16 +40,19 @@ const DynamicReportPage = ({ config }) => {
     useQuery,
     useLazyQuery,
     useDetailsQuery,
+    extraParams = {}, // ← ADD
+    skipQuery = false,
     tableConfig = {},
     searchConfig = {},
+
     exportConfig = {},
+
     customClassName = "report",
   } = config;
 
   const apiKey = useSelector((state) => state.auth.apiKey);
   const { exportToExcel } = useExportData();
 
-  // Get module info
   const moduleInfo = info[moduleKey] || {};
   const header = moduleInfo.tableHeader || [];
   const detailsHeaders =
@@ -63,14 +60,16 @@ const DynamicReportPage = ({ config }) => {
       ? tableConfig.detailsHeaders
       : moduleInfo.served || [];
 
-  // State management
+  // State
   const [searchValue, setSearchValue] = useState("");
   const [reportData, setReportData] = useState(null);
   const [isExporting, setIsExporting] = useState(false);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
-  // Accordion state (only used if isAccordion is true)
+  const debouncedSearch = useDebounce(searchValue, 500);
+
+  // Accordion state
   const [expandedRows, setExpandedRows] = useState({});
   const [expandableData, setExpandableData] = useState({});
   const [isLoadingExpanded, setIsLoadingExpanded] = useState({});
@@ -79,28 +78,24 @@ const DynamicReportPage = ({ config }) => {
   const [showPrintPreview, setShowPrintPreview] = useState(false);
   const { printData, isPrintLoading, fetchPrintData } = usePrintData();
 
-  // Query hooks
   const [triggerLazyQuery] = useLazyQuery();
-  const triggerDetailsQuery = useDetailsQuery ? useDetailsQuery()[0] : null;
+  const detailsQueryResult = useDetailsQuery?.() ?? [null];
+  const triggerDetailsQuery = detailsQueryResult[0];
 
-  // Determine if hasDatePicker is enabled (defaults to true if not specified)
   const hasDatePicker = searchConfig.hasDatePicker !== false;
-
-  // Main data query
-  // Only skip if date picker is ENABLED but dates are missing
-  // If date picker is disabled, never skip the query
   const shouldSkipQuery =
-    hasDatePicker &&
-    (!reportData || !reportData.startDate || !reportData.endDate);
+    skipQuery || // ← ADD this line
+    (hasDatePicker &&
+      (!reportData || !reportData.startDate || !reportData.endDate));
 
   const searchParamName = searchConfig.searchParamName || "search";
   const queryParams = {
-    apiKey: apiKey,
+    apiKey,
     usePagination: true,
-    [searchParamName]: searchValue,
+    [searchParamName]: debouncedSearch,
     pageNumber: page + 1,
     pageSize: rowsPerPage,
-    // Only spread reportData if it exists and has values
+    ...extraParams,
     ...(reportData && Object.keys(reportData).length > 0 ? reportData : {}),
   };
 
@@ -108,56 +103,57 @@ const DynamicReportPage = ({ config }) => {
     data: queryData,
     isLoading: isDataLoading,
     isFetching: isDataFetching,
-  } = useQuery(queryParams, {
-    skip: shouldSkipQuery,
-  });
+  } = useQuery(queryParams, { skip: shouldSkipQuery });
 
   const rows = queryData?.items || [];
   const totalCount = queryData?.totalCount || 0;
 
-  // Reset to first page when search changes
   useEffect(() => {
     setPage(0);
   }, [searchValue, reportData]);
 
-  // Event handlers
-  const handleSearchChange = useCallback((searchValue) => {
-    setSearchValue(searchValue);
-  }, []);
+  // ── Handlers ─────────────────────────────────────────────────────────────────
+
+  const handleSearchChange = useCallback((val) => setSearchValue(val), []);
 
   const handleReportDataChange = useCallback(async (data) => {
     setReportData(data);
   }, []);
 
-  const handleChangePage = useCallback((event, newPage) => {
-    setPage(newPage);
-  }, []);
+  const handleChangePage = useCallback((_, newPage) => setPage(newPage), []);
 
-  const handleChangeRowsPerPage = useCallback((event) => {
-    const newRowsPerPage = parseInt(event.target.value, 10);
-    setRowsPerPage(newRowsPerPage);
+  const handleChangeRowsPerPage = useCallback((e) => {
+    setRowsPerPage(parseInt(e.target.value, 10));
     setPage(0);
   }, []);
 
-  // Row expansion handler (for accordion tables)
+  /**
+   * handleRowExpand - called by AccordionTable with (rowId, isExpanding, rowData)
+   *
+   * rowData is the full parent row object — used to pass item_code (or any
+   * other field) to the details API.
+   */
   const handleRowExpand = useCallback(
-    async (rowId, isExpanding) => {
+    async (rowId, isExpanding, rowData) => {
       if (!tableConfig.isAccordion || !triggerDetailsQuery) return;
 
-      if (isExpanding && !expandableData[rowId]) {
+      if (isExpanding) {
         setIsLoadingExpanded((prev) => ({ ...prev, [rowId]: true }));
 
         try {
           const result = await triggerDetailsQuery({
-            apiKey: apiKey,
-            id: rowId.toString(),
+            apiKey,
+            // Use keyField as the param name: sends { id: ... } for OrderSummary
+            // and { item_code: ... } for RepackingAdjustment
+            [tableConfig.keyField]: rowData?.[tableConfig.keyField],
+            usePagination: false,
           }).unwrap();
 
           setExpandableData((prev) => ({
             ...prev,
-            [rowId]: result || [],
+            [rowId]: result?.items || result || [],
           }));
-        } catch (error) {
+        } catch {
           toast.error("Failed to load details");
           return;
         } finally {
@@ -165,33 +161,27 @@ const DynamicReportPage = ({ config }) => {
         }
       }
 
-      setExpandedRows((prev) => ({
-        ...prev,
-        [rowId]: isExpanding,
-      }));
+      setExpandedRows((prev) => ({ ...prev, [rowId]: isExpanding }));
     },
-    [apiKey, triggerDetailsQuery, expandableData, tableConfig.isAccordion]
+    [apiKey, triggerDetailsQuery, tableConfig],
   );
 
-  // Export handlers
+  // ── Export handlers ──────────────────────────────────────────────────────────
+
   const handleExcelExport = useCallback(async () => {
     if (shouldSkipQuery) {
       toast.error("Please select a date range before exporting.");
       return;
     }
-
     setIsExporting(true);
-
     try {
       await exportToExcel({
-        moduleKey: moduleKey,
+        moduleKey,
         exportData: null,
-        reportData: reportData,
-        apiKey: apiKey,
+        reportData,
+        apiKey,
         apiQuery: triggerLazyQuery,
-        searchParams: {
-          search: searchValue,
-        },
+        searchParams: { search: searchValue },
       });
     } catch (error) {
       console.error("Excel export failed:", error);
@@ -211,45 +201,48 @@ const DynamicReportPage = ({ config }) => {
   const handlePrintExport = useCallback(async () => {
     try {
       setShowPrintPreview(true);
-
       await fetchPrintData(triggerLazyQuery, {
-        apiKey: apiKey,
+        apiKey,
         usePagination: false,
         search: searchValue,
         ...reportData,
       });
-    } catch (error) {
+    } catch {
       setShowPrintPreview(false);
     }
   }, [fetchPrintData, triggerLazyQuery, apiKey, searchValue, reportData]);
 
-  const handlePrintPreviewClose = useCallback(() => {
-    setShowPrintPreview(false);
-  }, []);
+  const handlePrintPreviewClose = useCallback(
+    () => setShowPrintPreview(false),
+    [],
+  );
 
-  // Print filename props
-  const getPrintFilenameProps = () => {
-    return {
-      moduleName: moduleInfo.title,
-      companyName: info.companyName,
-      startDate: reportData?.startDate,
-      endDate: reportData?.endDate,
-      searchFilter: searchValue,
-      customTitle: `${moduleInfo.title} Report`,
-    };
-  };
+  const getPrintFilenameProps = () => ({
+    moduleName: moduleInfo.title,
+    companyName: info.companyName,
+    startDate: reportData?.startDate,
+    endDate: reportData?.endDate,
+    searchFilter: searchValue,
+    customTitle: `${moduleInfo.title} Report`,
+  });
 
-  // Accordion configuration
+  // ── Accordion config ─────────────────────────────────────────────────────────
+
   const accordionConfig = tableConfig.isAccordion
     ? {
         keyField: tableConfig.keyField || "id",
         detailsApi: handleRowExpand,
-        detailsHeaders: detailsHeaders,
-        quantityField: tableConfig.quantityField,
+        detailsHeaders,
+        quantityField: tableConfig.quantityField, // controls disabled state
+        clickableField: tableConfig.clickableField, // field rendered as link in expanded rows
+        onDetailCellClick: tableConfig.onDetailCellClick, // (detailRow, parentRow) => void
+        summaryField: tableConfig.summaryField, // field to sum in expanded footer
+        summaryLabel: tableConfig.summaryLabel, // label shown next to the sum
       }
     : null;
 
-  // Table props
+  // ── Table / export props ─────────────────────────────────────────────────────
+
   const commonTableProps = {
     header,
     data: queryData,
@@ -280,6 +273,8 @@ const DynamicReportPage = ({ config }) => {
         }
       : {};
 
+  // ── Render ───────────────────────────────────────────────────────────────────
+
   return (
     <Box className={customClassName}>
       <Box className={`${customClassName}__header`}>
@@ -294,7 +289,25 @@ const DynamicReportPage = ({ config }) => {
             setReportData={handleReportDataChange}
             updateQueryParams={searchConfig.updateQueryParams !== false}
             hasDatePicker={hasDatePicker}
+            hasSearch={searchConfig.hasSearch !== false}
             searchType={searchConfig.searchType || "text"}
+            hasDropdown={
+              !!(
+                searchConfig.dropdownOptions?.length ||
+                moduleInfo.dropdownOptions
+              )
+            }
+            dropdownOptions={
+              searchConfig.dropdownOptions?.length
+                ? searchConfig.dropdownOptions
+                : moduleInfo.dropdownOptions || []
+            }
+            dropdownLabel={searchConfig.dropdownLabel || "Type"}
+            isDropdownLoading={searchConfig.isDropdownLoading || false}
+            dropdownValue={searchConfig.dropdownValue}
+            onDropdownChange={searchConfig.onDropdownChange}
+            isLoading={isDataLoading}
+            isFetching={isDataFetching}
           />
         </Box>
       </Box>
@@ -315,7 +328,7 @@ const DynamicReportPage = ({ config }) => {
         )}
       </Box>
 
-      {/* Print Preview Dialog */}
+
       {showPrintPreview && (
         <PrintPreviewDialog
           isOpen={showPrintPreview}

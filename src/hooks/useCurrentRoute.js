@@ -3,9 +3,9 @@ import { findItemByPath } from "../routes/appConfig";
 
 export const useCurrentRoute = () => {
   const location = useLocation();
-  //console.log("🚀 ~ useCurrentRoute ~ location:", location)
+
   const currentRouteConfig = findItemByPath(location.pathname);
-  //console.log("🚀 ~ useCurrentRoute ~ currentRouteConfig:", currentRouteConfig)
+
 
   return {
     config: currentRouteConfig,

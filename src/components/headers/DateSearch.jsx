@@ -1,21 +1,19 @@
-/* eslint-disable react/prop-types */
-import {
-  Box,
-  Button,
-  CircularProgress,
-  Divider,
-  IconButton,
-  InputBase,
-  Typography,
-  Tooltip,
-  useTheme,
-} from "@mui/material";
-import React, { useRef, useState, useEffect, useCallback } from "react";
-import {
-  SearchRounded,
-  ClearRounded,
-  CalendarTodayRounded,
-} from "@mui/icons-material";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import CircularProgress from "@mui/material/CircularProgress";
+import Divider from "@mui/material/Divider";
+import IconButton from "@mui/material/IconButton";
+import InputBase from "@mui/material/InputBase";
+import Typography from "@mui/material/Typography";
+import { useTheme } from "@mui/material/styles";
+import Select from "@mui/material/Select";
+import FormControl from "@mui/material/FormControl";
+import InputLabel from "@mui/material/InputLabel";
+import MenuItem from "@mui/material/MenuItem";
+import { useRef, useState, useEffect, useCallback } from "react";
+import SearchRounded from "@mui/icons-material/SearchRounded";
+import ClearRounded from "@mui/icons-material/ClearRounded";
+import CalendarTodayRounded from "@mui/icons-material/CalendarTodayRounded";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment";
 import moment from "moment";
@@ -33,6 +31,15 @@ const DateSearch = ({
   initialDate = null,
   hasDatePicker = true,
   searchType = "text", // "text", "number", or "both"
+  hasDropdown = false,
+  hasSearch = true,
+  dropdownOptions = [],
+  onDropdownChange,
+  dropdownValue = "",
+  isLoading = false, // table loading state from parent
+  isFetching = false, // table fetching state from parent
+  dropdownLabel = "Type", // ← ADD
+  isDropdownLoading = false,
 }) => {
   const theme = useTheme();
   const currentDate = moment();
@@ -93,27 +100,19 @@ const DateSearch = ({
     if (onSearchChange) {
       let processedValue = debouncedSearch;
 
-      // Process based on searchType
       if (searchType === "number" && debouncedSearch) {
-        // Convert to number for "number" type
         const numValue = parseInt(debouncedSearch, 10);
         processedValue = isNaN(numValue) ? "" : numValue;
       }
-      // For "text" and "both" types, keep as string
 
       onSearchChange(processedValue);
     }
   }, [debouncedSearch, onSearchChange, searchType]);
 
-  // Update query parameters for search (separate effect)
+  // Update query parameters for search
   useEffect(() => {
     if (updateQueryParams) {
-      setQueryParams(
-        {
-          s: debouncedSearch || undefined,
-        },
-        { retain: true }
-      );
+      setQueryParams({ s: debouncedSearch || undefined }, { retain: true });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedSearch, updateQueryParams]);
@@ -127,43 +126,29 @@ const DateSearch = ({
   const handleSearchChange = (e) => {
     const value = e.target.value;
 
-    // Validate input based on searchType
     if (searchType === "number") {
-      // Only allow digits
-      if (value && !/^\d+$/.test(value)) {
-        return; // Block non-numeric input
-      }
+      if (value && !/^\d+$/.test(value)) return;
     } else if (searchType === "both") {
-      // Allow alphanumeric and spaces only
-      if (value && !/^[a-zA-Z0-9\s]*$/.test(value)) {
-        return; // Block special characters
-      }
+      if (value && !/^[a-zA-Z0-9\s]*$/.test(value)) return;
     }
-    // searchType === "text" allows everything (string and numbers as string)
 
     setSearch(value);
   };
 
   const handleSearchClear = useCallback(() => {
     setSearch("");
-    if (onSearchChange) {
-      onSearchChange("");
-    }
+    if (onSearchChange) onSearchChange("");
     inputRef.current?.focus();
   }, [onSearchChange]);
 
   const handleSearchBlur = () => {
-    if (!search.trim()) {
-      setSearchExpanded(false);
-    }
+    if (!search.trim()) setSearchExpanded(false);
   };
 
   // Date handlers
   const handleFromDateChange = (selectedDate) => {
     const newFromDate = moment(selectedDate);
     setStartDate(newFromDate);
-
-    // Adjust toDate if it's before the new fromDate
     if (endDate.isBefore(newFromDate, "day")) {
       setEndDate(newFromDate.clone());
     }
@@ -173,30 +158,26 @@ const DateSearch = ({
     setEndDate(moment(selectedDate));
   };
 
-  // Submit handler - only for dates
+  // Submit handler
   const handleSubmit = async () => {
     setLoading(true);
-
     try {
       const reportData = {
         startDate: startDate.format(info.format.date),
         endDate: endDate.format(info.format.date),
       };
 
-      // Update query parameters if enabled
       if (updateQueryParams) {
         setQueryParams(
           {
             fd: startDate.format(info.format.date),
             td: endDate.format(info.format.date),
           },
-          { retain: true }
+          { retain: true },
         );
       }
 
-      if (setReportData) {
-        await setReportData(reportData);
-      }
+      if (setReportData) await setReportData(reportData);
     } catch (error) {
       console.error("Error fetching report data:", error);
     } finally {
@@ -206,17 +187,16 @@ const DateSearch = ({
 
   const isSubmitDisabled = () => {
     if (loading) return true;
+    if (isLoading || isFetching) return true; // ← disabled while table is loading/fetching
     if (hasDatePicker && endDate.isBefore(startDate, "day")) return true;
     return false;
   };
 
-  // Get input type based on searchType
   const getInputType = () => {
-    if (searchType === "number") return "tel"; // Use tel to show numeric keyboard on mobile
+    if (searchType === "number") return "tel";
     return "text";
   };
 
-  // Get tooltip text based on searchType
   const getTooltipText = () => {
     switch (searchType) {
       case "number":
@@ -228,6 +208,9 @@ const DateSearch = ({
         return "Text search (strings and numbers as text)";
     }
   };
+
+  // Button label/icon reflects both local submit loading and table fetching
+  const isTableBusy = isLoading || isFetching;
 
   return (
     <LocalizationProvider dateAdapter={AdapterMoment}>
@@ -241,13 +224,8 @@ const DateSearch = ({
           p: 1,
           overflowX: "auto",
           overflowY: "visible",
-          "&::-webkit-scrollbar": {
-            height: 6,
-          },
-          "&::-webkit-scrollbar-thumb": {
-            background: "#ccc",
-            borderRadius: 3,
-          },
+          "&::-webkit-scrollbar": { height: 6 },
+          "&::-webkit-scrollbar-thumb": { background: "#ccc", borderRadius: 3 },
         }}
       >
         {/* Date Range Pickers */}
@@ -265,7 +243,6 @@ const DateSearch = ({
                 },
               }}
             />
-
             <DatePicker
               label="End Date"
               value={endDate}
@@ -289,7 +266,7 @@ const DateSearch = ({
             onClick={handleSubmit}
             disabled={isSubmitDisabled()}
             startIcon={
-              loading ? (
+              loading || isTableBusy ? (
                 <CircularProgress size={16} color="inherit" />
               ) : (
                 <CalendarTodayRounded />
@@ -303,99 +280,119 @@ const DateSearch = ({
               fontWeight: 600,
               boxShadow: "0 2px 8px rgba(25, 118, 210, 0.2)",
               flexShrink: 0,
-              "&:hover": {
-                boxShadow: "0 4px 12px rgba(25, 118, 210, 0.3)",
-              },
-              "&:disabled": {
-                backgroundColor: "#e0e0e0",
-                color: "#999",
-              },
+              "&:hover": { boxShadow: "0 4px 12px rgba(25, 118, 210, 0.3)" },
+              "&:disabled": { backgroundColor: "#e0e0e0", color: "#999" },
             }}
           >
-            {loading ? "Loading..." : "Generate"}
+            {loading ? "Loading..." : isTableBusy ? "Fetching..." : "Generate"}
           </Button>
+        )}
+
+        {hasDropdown && (
+          <FormControl size="small" sx={{ minWidth: 160, flexShrink: 0 }}>
+            <InputLabel id="dropdown-label">{dropdownLabel}</InputLabel>{" "}
+            {/* ← was "Type" */}
+            <Select
+              labelId="dropdown-label"
+              value={dropdownValue}
+              label={dropdownLabel}
+              onChange={(e) => onDropdownChange?.(e.target.value)}
+              disabled={isDropdownLoading}
+            >
+              {dropdownOptions.map((option) => (
+                <MenuItem key={option.value} value={option.value}>
+                  {option.label}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
         )}
 
         {hasDatePicker && setReportData && (
           <Divider orientation="vertical" variant="middle" flexItem />
         )}
 
-        {/* Search with Tooltip */}
-        <CustomTooltip title={getTooltipText()}  bgcolor={theme.palette.secondary.main} color={theme.palette.secondary.contrastText}>
-          <Box sx={{ position: "relative", flexShrink: 0 }}>
-            <InputBase
-              ref={inputRef}
-              type={getInputType()}
-              inputMode={searchType === "number" ? "numeric" : "text"}
-              placeholder={searchPlaceHolder}
-              value={search}
-              onChange={handleSearchChange}
-              onFocus={handleSearchFocus}
-              onBlur={handleSearchBlur}
-              startAdornment={
-                <IconButton
-                  onClick={handleSearchFocus}
-                  sx={{
-                    color: searchExpanded ? theme.palette.primary.main : "#666",
-                    transition: "color 0.3s ease",
-                    p: 1,
-                  }}
-                >
-                  <SearchRounded sx={{ zIndex: "1" }} />
-                </IconButton>
-              }
-              endAdornment={
-                search && (
+        {/* Search */}
+        {hasSearch && (
+          <CustomTooltip
+            title={getTooltipText()}
+            bgcolor={theme.palette.secondary.main}
+            color={theme.palette.secondary.contrastText}
+          >
+            <Box sx={{ position: "relative", flexShrink: 0 }}>
+              <InputBase
+                ref={inputRef}
+                type={getInputType()}
+                inputMode={searchType === "number" ? "numeric" : "text"}
+                placeholder={searchPlaceHolder}
+                value={search}
+                onChange={handleSearchChange}
+                onFocus={handleSearchFocus}
+                onBlur={handleSearchBlur}
+                startAdornment={
                   <IconButton
-                    onClick={handleSearchClear}
-                    size="small"
+                    onClick={handleSearchFocus}
                     sx={{
-                      color: "#666",
-                      mr: 1,
-                      "&:hover": { color: theme.palette.primary.main },
+                      color: searchExpanded
+                        ? theme.palette.primary.main
+                        : "#666",
+                      transition: "color 0.3s ease",
+                      p: 1,
                     }}
                   >
-                    <ClearRounded fontSize="small" />
+                    <SearchRounded sx={{ zIndex: "1" }} />
                   </IconButton>
-                )
-              }
-              sx={{
-                minWidth: 300,
-                height: 40,
-                px: 0,
-                border: "1px solid #c4c4c4",
-                borderRadius: 1,
-                backgroundColor: theme.palette.background.paper,
-                fontSize: "0.875rem",
-                "&:hover": {
-                  borderColor: "#000",
-                },
-                "&:focus-within": {
-                  borderColor: theme.palette.primary.dark,
-                  borderWidth: "2px",
-                },
-              }}
-            />
-            <Typography
-              variant="caption"
-              sx={{
-                position: "absolute",
-                top: -8,
-                left: 12,
-                backgroundColor: theme.palette.background.paper,
-                px: 0.5,
-                color: searchExpanded ? theme.palette.primary.main : "#666",
-                fontSize: "0.75rem",
-                transition: "color 0.3s ease",
-              }}
-            >
-              Search
-              {searchType === "number" && " (Numbers only)"}
-              {searchType === "both" && " (Alphanumeric)"}
-            </Typography>
-          </Box>
-        </CustomTooltip>
-        
+                }
+                endAdornment={
+                  search && (
+                    <IconButton
+                      onClick={handleSearchClear}
+                      size="small"
+                      sx={{
+                        color: "#666",
+                        mr: 1,
+                        "&:hover": { color: theme.palette.primary.main },
+                      }}
+                    >
+                      <ClearRounded fontSize="small" />
+                    </IconButton>
+                  )
+                }
+                sx={{
+                  minWidth: 300,
+                  height: 40,
+                  px: 0,
+                  border: "1px solid #c4c4c4",
+                  borderRadius: 1,
+                  backgroundColor: theme.palette.background.paper,
+                  fontSize: "0.875rem",
+                  "&:hover": { borderColor: "#000" },
+                  "&:focus-within": {
+                    borderColor: theme.palette.primary.dark,
+                    borderWidth: "2px",
+                  },
+                }}
+              />
+              <Typography
+                variant="caption"
+                sx={{
+                  position: "absolute",
+                  top: -8,
+                  left: 12,
+                  backgroundColor: theme.palette.background.paper,
+                  px: 0.5,
+                  color: searchExpanded ? theme.palette.primary.main : "#666",
+                  fontSize: "0.75rem",
+                  transition: "color 0.3s ease",
+                }}
+              >
+                Search
+                {searchType === "number" && " (Numbers only)"}
+                {searchType === "both" && " (Alphanumeric)"}
+              </Typography>
+            </Box>
+          </CustomTooltip>
+        )}
       </Box>
     </LocalizationProvider>
   );

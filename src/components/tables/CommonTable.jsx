@@ -155,7 +155,9 @@ const CommonTable = ({
                 sx={isPrintMode ? printStyles.row : {}}
               >
                 {header.map((column, colIndex) => {
-                  const cellValue = row[column.id];
+                  const cellValue = column.computed
+                    ? column.computed(row)
+                    : row[column.id];
                   const formattedValue = formatCellValue(cellValue, column);
                   const isNegative = isNegativeValue(cellValue);
                   const cellStyles = getCellStyles(column.type);

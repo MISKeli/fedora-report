@@ -13,9 +13,17 @@ const fgInventoryApi = indexApi
         }),
         providesTags: ["fg"],
       }),
+      DetailedReports: builder.query({
+        query: (params) => ({
+          url: `/Reports/fg-inventory-detailed`,
+          method: "GET",
+          params,
+        }),
+        providesTags: ["fg"],
+      }),
     }),
   });
 
 export const {
-  useReportsQuery, useLazyReportsQuery
+  useReportsQuery, useLazyReportsQuery, useDetailedReportsQuery, useLazyDetailedReportsQuery,
 } = fgInventoryApi;

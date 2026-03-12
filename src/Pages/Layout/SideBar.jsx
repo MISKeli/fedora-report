@@ -28,6 +28,7 @@ import {
   appConfig,
   generateFullPath,
   hasActiveChild,
+  hasRole, // ← import the new utility
   getFirstAccessibleChild,
 } from "../../routes/appConfig";
 import { info } from "../../schema/info";
@@ -40,20 +41,18 @@ const SideBar = ({ isOpen, onClose }) => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [expandedItems, setExpandedItems] = useState(new Set());
 
-  // Get user permissions from session storage
+  // Get user info from session storage
   const user = JSON.parse(sessionStorage.getItem("user"));
   const userPermissions = user?.permission || [];
   const userName = user?.name || user?.user || "User";
-  const userRole = user?.user || "Admin";
+  const userRole = user?.user || ""; // "admin", "ksoriano", etc. — from login response
 
-  // Menu state
   const isMenuOpen = Boolean(anchorEl);
 
-  // Check if user has permission for a menu item
   const hasPermission = (itemPermissions) => {
     if (!itemPermissions || itemPermissions.length === 0) return true;
     return itemPermissions.some((permission) =>
-      userPermissions.includes(permission)
+      userPermissions.includes(permission),
     );
   };
 
@@ -62,17 +61,15 @@ const SideBar = ({ isOpen, onClose }) => {
     const checkAndExpandParents = (
       items,
       parentPath = "",
-      newExpanded = new Set()
+      newExpanded = new Set(),
     ) => {
       items.forEach((item) => {
         const fullPath = generateFullPath(item, parentPath);
-
         if (
           item.children &&
           hasActiveChild(item, location.pathname, parentPath)
         ) {
           newExpanded.add(item.section);
-          // Recursively check children
           checkAndExpandParents(item.children, fullPath, newExpanded);
         }
       });
@@ -83,7 +80,6 @@ const SideBar = ({ isOpen, onClose }) => {
     setExpandedItems(newExpanded);
   }, [location.pathname]);
 
-  // Toggle expansion of menu items
   const toggleExpanded = (section, event) => {
     event.stopPropagation();
     setExpandedItems((prev) => {
@@ -97,16 +93,23 @@ const SideBar = ({ isOpen, onClose }) => {
     });
   };
 
-  // Render menu items recursively
   const renderMenuItems = (items, parentPath = "", depth = 0) => {
     return items
-      .filter((item) => item.showInNav && hasPermission(item.permissions))
+      .filter(
+        (item) =>
+          item.showInNav &&
+          hasPermission(item.permissions) &&
+          hasRole(item.roles, userRole), // ← role check added here
+      )
       .map((item) => {
         const fullPath = generateFullPath(item, parentPath);
         const hasChildren =
           item.children &&
           item.children.some(
-            (child) => child.showInNav && hasPermission(child.permissions)
+            (child) =>
+              child.showInNav &&
+              hasPermission(child.permissions) &&
+              hasRole(child.roles, userRole), // ← also check children
           );
         const isExpanded = expandedItems.has(item.section);
         const isActive = isActiveItem(item, fullPath);
@@ -123,9 +126,7 @@ const SideBar = ({ isOpen, onClose }) => {
                 depth > 0 ? "side__menu-item--nested" : ""
               }`}
               disablePadding
-              sx={{
-                pl: depth * 2, // Indent nested items
-              }}
+              sx={{ pl: depth * 2 }}
             >
               <ListItemButton
                 className={`side__menu-button ${
@@ -136,7 +137,7 @@ const SideBar = ({ isOpen, onClose }) => {
                   minHeight: 48,
                   justifyContent: isOpen ? "initial" : "center",
                   px: 2.5,
-                  ml: depth > 0 ? 1 : 0, // Additional margin for nested items
+                  ml: depth > 0 ? 1 : 0,
                 }}
               >
                 <ListItemIcon
@@ -185,7 +186,6 @@ const SideBar = ({ isOpen, onClose }) => {
               </ListItemButton>
             </ListItem>
 
-            {/* Render children with collapse animation */}
             {hasChildren && isOpen && (
               <Collapse in={isExpanded} timeout="auto" unmountOnExit>
                 <List component="div" disablePadding>
@@ -198,39 +198,27 @@ const SideBar = ({ isOpen, onClose }) => {
       });
   };
 
-  // Check if item is active
   const isActiveItem = (item, fullPath) => {
-    if (item.path === "/") {
-      return location.pathname === "/";
-    }
-
-    // For items with children, they're active if the current path starts with their path
+    if (item.path === "/") return location.pathname === "/";
     if (item.children) {
       return (
         location.pathname.startsWith(fullPath) && location.pathname !== "/"
       );
     }
-
     return location.pathname === fullPath;
   };
 
-  // Handle menu item click
   const handleMenuClick = (item, fullPath, event) => {
-    // If item has children and sidebar is open
     if (item.children && isOpen) {
-      // If it's a parent item, either navigate to first child or just expand
       if (!item.component) {
-        // Just toggle expansion for parent items without components
         toggleExpanded(item.section, event);
         return;
       }
     }
 
-    // Navigate to the item or its first accessible child
     let targetPath = fullPath;
 
     if (item.children && !item.component) {
-      // Navigate to first accessible child if parent has no component
       const firstChild = getFirstAccessibleChild(item, userPermissions);
       if (firstChild) {
         targetPath = generateFullPath(firstChild, fullPath);
@@ -239,43 +227,32 @@ const SideBar = ({ isOpen, onClose }) => {
 
     if (targetPath === "/" || targetPath) {
       navigate(targetPath);
-
-      // Close sidebar on mobile/small screens
-      if (window.innerWidth <= 768) {
-        onClose();
-      }
+      if (window.innerWidth <= 768) onClose();
     }
   };
 
-  // User menu handlers
   const handleToggleUserMenu = (event) => {
     setAnchorEl(anchorEl ? null : event.currentTarget);
   };
 
-  const handleCloseUserMenu = () => {
-    setAnchorEl(null);
-  };
+  const handleCloseUserMenu = () => setAnchorEl(null);
 
-  // Logout handler
   const handleLogout = () => {
     dispatch(logoutSlice());
     sessionStorage.clear();
     handleCloseUserMenu();
   };
 
-  // Get user initials for avatar
-  const getUserInitials = (name) => {
-    return name
+  const getUserInitials = (name) =>
+    name
       .split(" ")
       .map((word) => word.charAt(0))
       .join("")
       .toUpperCase()
       .slice(0, 2);
-  };
 
   return (
     <>
-      {/* Overlay for mobile */}
       {isOpen && (
         <Box
           className="side__overlay"
@@ -294,7 +271,6 @@ const SideBar = ({ isOpen, onClose }) => {
       )}
 
       <Box className={`side ${isOpen ? "side--open" : "side--closed"}`}>
-        {/* Header */}
         <Box className="side__container side__container--header">
           <Box className="side__header">
             <img src={fedoraLogo} className="side__logo" alt="fedora Logo" />
@@ -304,12 +280,10 @@ const SideBar = ({ isOpen, onClose }) => {
           </Box>
         </Box>
 
-        {/* Navigation Menu */}
         <Box className="side__container side__container--content">
           <List className="side__menu">{renderMenuItems(appConfig)}</List>
         </Box>
 
-        {/* Footer with User Menu */}
         <Box className="side__container side__container--footer">
           <Box className="side__user-menu">
             <ListItemButton
@@ -320,9 +294,7 @@ const SideBar = ({ isOpen, onClose }) => {
                 padding: "8px 12px",
                 margin: "4px 8px",
                 transition: "all 0.2s ease",
-                "&:hover": {
-                  backgroundColor: "rgba(25, 118, 210, 0.08)",
-                },
+                "&:hover": { backgroundColor: "rgba(25, 118, 210, 0.08)" },
                 justifyContent: isOpen ? "initial" : "center",
               }}
             >
@@ -393,28 +365,15 @@ const SideBar = ({ isOpen, onClose }) => {
         </Box>
       </Box>
 
-      {/* User Menu Dropdown */}
       <Menu
         className="side__user-dropdown"
         anchorEl={anchorEl}
         open={isMenuOpen}
         onClose={handleCloseUserMenu}
-        anchorOrigin={{
-          vertical: "top",
-          horizontal: "right",
-        }}
-        transformOrigin={{
-          vertical: "bottom",
-          horizontal: "left",
-        }}
-        PaperProps={{
-          sx: {
-            minWidth: 200,
-            mt: -1,
-          },
-        }}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+        transformOrigin={{ vertical: "bottom", horizontal: "left" }}
+        PaperProps={{ sx: { minWidth: 200, mt: -1 } }}
       >
-        {/* User Info in Menu */}
         <Box className="side__user-dropdown-header" sx={{ px: 2, py: 1.5 }}>
           <Box sx={{ display: "flex", alignItems: "center" }}>
             <Avatar
@@ -442,11 +401,7 @@ const SideBar = ({ isOpen, onClose }) => {
               </Typography>
               <Typography
                 variant="caption"
-                sx={{
-                  fontSize: 12,
-                  color: "rgb(97, 97, 97)",
-                  lineHeight: 1.2,
-                }}
+                sx={{ fontSize: 12, color: "rgb(97, 97, 97)", lineHeight: 1.2 }}
               >
                 {userRole}
               </Typography>
@@ -456,7 +411,6 @@ const SideBar = ({ isOpen, onClose }) => {
 
         <Divider />
 
-        {/* Menu Items */}
         <MenuItem onClick={handleCloseUserMenu}>
           <ListItemIcon>
             <Person fontSize="small" />
