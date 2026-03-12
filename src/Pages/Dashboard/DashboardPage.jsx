@@ -666,39 +666,41 @@ const FedoraProductionDashboard = () => {
           )}
         </Grid>
 
-        {/* ── Stat Cards Grid ──────────────────────────── */}
-        <Grid container spacing={2} className="fedora-dashboard__grid">
-          {DASHBOARD_CARDS.map((card) => {
-            const summary = get(data, card.summaryPath, {});
-            const finished = summary.finished ?? 0;
-            const pending = summary.pending ?? 0;
-            const rows = get(data, card.dataKey, []);
-            const isOpen = openKey === card.key;
-            const isHidden = openKey !== null && !isOpen;
+        {/* ── Stat Cards Grid — hidden when hero is expanded ── */}
+        {!heroOpen && (
+          <Grid container spacing={2} className="fedora-dashboard__grid">
+            {DASHBOARD_CARDS.map((card) => {
+              const summary = get(data, card.summaryPath, {});
+              const finished = summary.finished ?? 0;
+              const pending = summary.pending ?? 0;
+              const rows = get(data, card.dataKey, []);
+              const isOpen = openKey === card.key;
+              const isHidden = openKey !== null && !isOpen;
 
-            return (
-              <Grid
-                size={{ xs: 12, sm: isOpen ? 12 : 6, md: isOpen ? 12 : 4 }}
-                key={card.key}
-                className="fedora-dashboard__grid-item"
-                sx={{ display: isHidden ? "none" : undefined }}
-              >
-                {isLoading || !data ? (
-                  <StatCardSkeleton />
-                ) : (
-                  <CollapsibleCard
-                    label={card.label}
-                    finished={finished}
-                    total={finished + pending}
-                    rows={rows}
-                    open={isOpen}
-                    onToggle={() => toggleCard(card.key)}
-                  />
-                )}
-              </Grid>
-            );
-          })}
-        </Grid>
+              return (
+                <Grid
+                  size={{ xs: 12, sm: isOpen ? 12 : 6, md: isOpen ? 12 : 4 }}
+                  key={card.key}
+                  className="fedora-dashboard__grid-item"
+                  sx={{ display: isHidden ? "none" : undefined }}
+                >
+                  {isLoading || !data ? (
+                    <StatCardSkeleton />
+                  ) : (
+                    <CollapsibleCard
+                      label={card.label}
+                      finished={finished}
+                      total={finished + pending}
+                      rows={rows}
+                      open={isOpen}
+                      onToggle={() => toggleCard(card.key)}
+                    />
+                  )}
+                </Grid>
+              );
+            })}
+          </Grid>
+        )}
       </Box>
     </LocalizationProvider>
   );
